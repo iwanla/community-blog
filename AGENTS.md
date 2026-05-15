@@ -320,3 +320,11 @@ Wisata · Budaya · Kuliner · Sejarah · Berita Lokal · Cerita Warga · UMKM
 ## File Conventions
 
 - `plan.md` dan semua dokumen perencanaan disimpan di `.codex/plans/`
+
+<claude-mem-context>
+# Memory Context
+
+# [community-blog] recent context, 2026-05-15 10:00pm GMT+7
+
+No previous sessions found.
+</claude-mem-context>

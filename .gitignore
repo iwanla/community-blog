@@ -1,0 +1,39 @@
+# Local secrets and environment
+.env
+.env.*
+!.env.example
+worker/.dev.vars
+worker/.dev.vars.*
+
+# Dependencies
+node_modules/
+worker/node_modules/
+
+# Cloudflare / Wrangler local state
+.wrangler/
+worker/.wrangler/
+.mf/
+worker/.mf/
+
+# Local AI/tooling workspace
+.codex/
+
+# Build and coverage output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

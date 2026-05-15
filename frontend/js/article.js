@@ -1,4 +1,4 @@
-import { getApprovedPosts } from "./api.js";
+import { getApprovedPosts, getPostBySlug } from "./api.js";
 import { postsOrDummy } from "./dummy-posts.js";
 import { applyTranslations, categoryLabel, formatDate, setMeta, t, withLang } from "./i18n.js";
 
@@ -7,7 +7,7 @@ const catStyle = {
   Kuliner: { text: "cat-kuliner", bg: "cat-bg-kuliner" },
   Budaya: { text: "cat-budaya", bg: "cat-bg-budaya" },
   Sejarah: { text: "cat-sejarah", bg: "cat-bg-sejarah" },
-  Berita: { text: "cat-berita", bg: "cat-bg-berita" },
+  "Berita Lokal": { text: "cat-berita", bg: "cat-bg-berita" },
   "Cerita Warga": { text: "cat-cerita", bg: "cat-bg-cerita" },
   UMKM: { text: "cat-umkm", bg: "cat-bg-umkm" },
 };
@@ -227,15 +227,14 @@ async function init() {
   }
 
   try {
-    const posts = postsOrDummy(await getApprovedPosts());
-    const post = posts.find((item) => item.slug === slug);
+    const post = await getPostBySlug(slug);
 
     if (!post) {
       renderNotFound();
       return;
     }
 
-    const related = posts
+    const related = (await getApprovedPosts({ limit: 6 }))
       .filter((item) => item.slug !== slug && item.category === post.category)
       .slice(0, 3);
 

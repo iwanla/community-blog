@@ -1,0 +1,17 @@
+name = "jelajah-blog-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-03"
+workers_dev = true
+preview_urls = true
+
+[vars]
+ASSET_PUBLIC_BASE_URL = "https://jelajah-blog-api.iwanlaudin01.workers.dev/assets"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jelajah_blog"
+database_id = "77234480-585b-4d13-ace7-de7401874267"
+
+[[r2_buckets]]
+bucket_name = "jelajah-blog-assets"
+binding = "BUCKET"

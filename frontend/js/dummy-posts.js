@@ -68,7 +68,7 @@ export const DUMMY_POSTS = [
     id: "dummy-6",
     slug: "jalan-baru-bobong-lede",
     title: "Jalan Baru Bobong-Lede Resmi Dibuka untuk Umum",
-    category: "Berita",
+    category: "Berita Lokal",
     location: "Bobong",
     author_name: "Redaksi",
     author_contact: "",

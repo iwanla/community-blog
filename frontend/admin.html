@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - JelajahTaliabu</title>
+  <meta name="description" content="Dashboard moderasi artikel JelajahTaliabu." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { background: #f1efe8; color: #042c53; font-family: system-ui, sans-serif; }
+    .admin-shell { max-width: 1040px; margin: 0 auto; padding: 32px 20px 56px; }
+    .admin-head { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 24px; }
+    .admin-head h1 { font-size: 24px; margin: 0; }
+    .token-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .token-form input { min-width: 260px; flex: 1; padding: 10px 12px; border: 1px solid rgba(4,44,83,.14); border-radius: 8px; }
+    .admin-btn { border: 0; border-radius: 8px; padding: 10px 14px; background: #185fa5; color: white; cursor: pointer; }
+    .admin-btn.secondary { background: #5f5e5a; }
+    .admin-btn.danger { background: #a32d2d; }
+    .admin-list { display: grid; gap: 12px; }
+    .admin-card { background: white; border: 1px solid rgba(4,44,83,.1); border-radius: 8px; padding: 16px; }
+    .admin-card h2 { font-size: 18px; margin: 0 0 8px; }
+    .admin-meta { color: #5f5e5a; font-size: 13px; margin-bottom: 10px; }
+    .admin-excerpt { color: #333; line-height: 1.6; margin-bottom: 14px; }
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .admin-empty { padding: 24px; background: white; border-radius: 8px; color: #5f5e5a; }
+  </style>
+</head>
+<body>
+  <main class="admin-shell">
+    <div class="admin-head">
+      <h1>Moderasi Artikel</h1>
+      <a href="index.html">Kembali ke Beranda</a>
+    </div>
+
+    <form class="token-form" id="token-form">
+      <input id="admin-token" type="password" placeholder="ADMIN_TOKEN" autocomplete="current-password" />
+      <button class="admin-btn" type="submit">Muat Pending</button>
+    </form>
+
+    <div id="admin-message" class="admin-empty">Masukkan token admin untuk memuat submission pending.</div>
+    <section class="admin-list" id="pending-posts"></section>
+  </main>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

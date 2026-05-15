@@ -7,7 +7,7 @@ const catStyle = {
   Kuliner: { text: "cat-kuliner", bg: "cat-bg-kuliner" },
   Budaya: { text: "cat-budaya", bg: "cat-bg-budaya" },
   Sejarah: { text: "cat-sejarah", bg: "cat-bg-sejarah" },
-  Berita: { text: "cat-berita", bg: "cat-bg-berita" },
+  "Berita Lokal": { text: "cat-berita", bg: "cat-bg-berita" },
   "Cerita Warga": { text: "cat-cerita", bg: "cat-bg-cerita" },
   UMKM: { text: "cat-umkm", bg: "cat-bg-umkm" },
 };
@@ -40,7 +40,7 @@ function placeholderIcon(category) {
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>',
     Sejarah:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z"/></svg>',
-    Berita:
+    "Berita Lokal":
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l6 6v8a2 2 0 0 1-2 2z"/><polyline stroke-linecap="round" stroke-linejoin="round" points="17 21 17 13 7 13 7 21"/><polyline stroke-linecap="round" stroke-linejoin="round" points="7 3 7 8 15 8"/></svg>',
     "Cerita Warga":
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
@@ -48,7 +48,7 @@ function placeholderIcon(category) {
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline stroke-linecap="round" stroke-linejoin="round" points="9 22 9 12 15 12 15 22"/></svg>',
   };
 
-  return icons[category] || icons.Berita;
+  return icons[category] || icons["Berita Lokal"];
 }
 
 function renderCard(post, index) {
