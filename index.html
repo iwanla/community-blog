@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JelajahTaliabu - Cerita dari Pulau Taliabu</title>
+  <meta name="description" content="Platform komunitas untuk berbagi cerita, wisata, budaya, dan kuliner seputar Pulau Taliabu." />
+  <meta property="og:title" content="JelajahTaliabu" />
+  <meta property="og:description" content="Cerita dari Pulau Taliabu" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="site-top-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand" data-preserve-lang>
+        <div class="nav-brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+        </div>
+        <span class="nav-brand-text">JelajahTaliabu</span>
+      </a>
+      <div class="nav-actions">
+        <ul class="nav-links">
+          <li><a href="#filter-pills" data-i18n="submit.category">Kategori</a></li>
+          <li><a href="#articles-grid" data-i18n="nav.articles">Artikel</a></li>
+        </ul>
+        <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+        <a href="submit.html" class="btn-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
+      </div>
+      <div class="mobile-nav-controls">
+        <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-label="Menu">
+          <span class="nav-toggle-lines" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-nav-overlay" data-mobile-nav-overlay hidden></div>
+  <aside class="mobile-nav-drawer" data-mobile-nav-drawer aria-hidden="true">
+    <div class="mobile-nav-head">
+      <span class="nav-brand-text">JelajahTaliabu</span>
+      <button class="mobile-nav-close" type="button" data-mobile-nav-close>
+        <span aria-hidden="true">&times;</span>
+        <span data-i18n="nav.close">Tutup</span>
+      </button>
+    </div>
+    <nav class="mobile-nav-menu" aria-label="Mobile navigation">
+      <a href="#filter-pills" data-i18n="submit.category" data-preserve-lang>Kategori</a>
+      <a href="#articles-grid" data-i18n="nav.articles" data-preserve-lang>Artikel</a>
+      <a href="submit.html" class="btn-submit mobile-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
+    </nav>
+  </aside>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-line"></span>
+      <span data-i18n="hero.eyebrow">Pulau Taliabu, Maluku Utara</span>
+    </div>
+    <h1 class="hero-title"><span data-i18n="hero.titlePrefix">Jelajahi cerita &</span><br><em data-i18n="hero.titleEm">keajaiban</em> <span data-i18n="hero.titleSuffix">Taliabu</span></h1>
+    <p class="hero-sub" data-i18n="hero.subtitle">
+      Platform komunitas untuk berbagi wisata, budaya, kuliner, dan cerita warga dari seluruh penjuru Pulau Taliabu.
+    </p>
+  </section>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search-input" class="search-input" type="text" placeholder="Cari artikel..." data-i18n-placeholder="home.searchPlaceholder" />
+    </div>
+    <div class="filter-pills" id="filter-pills">
+      <button class="pill active" data-cat="semua" data-i18n="home.all">Semua</button>
+      <button class="pill" data-cat="Wisata">Wisata</button>
+      <button class="pill" data-cat="Budaya">Budaya</button>
+      <button class="pill" data-cat="Kuliner">Kuliner</button>
+      <button class="pill" data-cat="Sejarah">Sejarah</button>
+      <button class="pill" data-cat="Cerita Warga">Cerita Warga</button>
+      <button class="pill" data-cat="UMKM">UMKM</button>
+      <button class="pill" data-cat="Berita">Berita</button>
+    </div>
+  </div>
+
+  <!-- SECTION HEADER -->
+  <div class="section-divider">
+    <h2 data-i18n="home.latest">Artikel Terbaru</h2>
+    <span id="article-count" data-i18n="home.loading">memuat...</span>
+  </div>
+
+  <!-- GRID -->
+  <main class="articles-grid" id="articles-grid">
+    <!-- Skeleton loading -->
+    <div class="card is-loading">
+      <div class="skeleton skeleton-img"></div>
+      <div class="card-body skeleton-card-body">
+        <div class="skeleton skeleton-line-sm"></div>
+        <div class="skeleton skeleton-line-lg"></div>
+        <div class="skeleton skeleton-line-md"></div>
+        <div class="skeleton skeleton-line-footer"></div>
+      </div>
+    </div>
+    <div class="card is-loading">
+      <div class="skeleton skeleton-img"></div>
+      <div class="card-body skeleton-card-body">
+        <div class="skeleton skeleton-line-sm"></div>
+        <div class="skeleton skeleton-line-lg"></div>
+        <div class="skeleton skeleton-line-md"></div>
+        <div class="skeleton skeleton-line-footer"></div>
+      </div>
+    </div>
+    <div class="card is-loading">
+      <div class="skeleton skeleton-img"></div>
+      <div class="card-body skeleton-card-body">
+        <div class="skeleton skeleton-line-sm"></div>
+        <div class="skeleton skeleton-line-lg"></div>
+        <div class="skeleton skeleton-line-md"></div>
+        <div class="skeleton skeleton-line-footer"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">JelajahTaliabu</div>
+    <div class="footer-sub" data-i18n="footer.subtitle">Ditulis oleh warga, untuk semua orang.</div>
+  </footer>
+
+  <script type="module" src="js/nav.js"></script>
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artikel — JelajahTaliabu</title>
+  <meta name="description" content="" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:image" content="" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="site-top-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand" data-preserve-lang>
+        <div class="nav-brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+        </div>
+        <span class="nav-brand-text">JelajahTaliabu</span>
+      </a>
+      <div class="nav-actions">
+        <a href="index.html" class="nav-back" data-preserve-lang>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          <span data-i18n="nav.back">Kembali</span>
+        </a>
+        <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+        <a href="submit.html" class="btn-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
+      </div>
+      <div class="mobile-nav-controls">
+        <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-label="Menu">
+          <span class="nav-toggle-lines" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-nav-overlay" data-mobile-nav-overlay hidden></div>
+  <aside class="mobile-nav-drawer" data-mobile-nav-drawer aria-hidden="true">
+    <div class="mobile-nav-head">
+      <span class="nav-brand-text">JelajahTaliabu</span>
+      <button class="mobile-nav-close" type="button" data-mobile-nav-close>
+        <span aria-hidden="true">&times;</span>
+        <span data-i18n="nav.close">Tutup</span>
+      </button>
+    </div>
+    <nav class="mobile-nav-menu" aria-label="Mobile navigation">
+      <a href="index.html" data-i18n="nav.back" data-preserve-lang>Kembali</a>
+      <a href="submit.html" class="btn-submit mobile-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
+    </nav>
+  </aside>
+
+  <!-- COVER (diisi via JS) -->
+  <div class="cover-wrap is-hidden" id="cover-wrap"></div>
+
+  <!-- MAIN -->
+  <div id="page-content"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">JelajahTaliabu</div>
+    <div class="footer-sub" data-i18n="footer.subtitle">Ditulis oleh warga, untuk semua orang.</div>
+  </footer>
+
+  <script type="module" src="js/nav.js"></script>
+  <script type="module" src="js/article.js"></script>
+</body>
+</html>
