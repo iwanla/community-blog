@@ -152,7 +152,7 @@
     }
 
     .lang-switcher a[aria-current="true"] {
-      background: var(--blue-600);
+      background: var(--white);
       color: var(--white);
     }
 
@@ -598,24 +598,171 @@
     }
 
     /* FOOTER */
-    footer {
+    .site-footer {
       background: var(--blue-900);
       color: var(--blue-200);
-      padding: 2.5rem 2rem;
-      text-align: center;
     }
 
-    .footer-brand {
+    .footer-main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3.5rem 2rem 2.5rem;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 3rem;
+    }
+
+    .footer-brand-name {
       font-family: 'Lora', serif;
-      font-size: 18px;
-      color: white;
-      margin-bottom: 6px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .footer-sub {
-      font-size: 12px;
+    .footer-brand-icon {
+      width: 26px;
+      height: 26px;
+      background: var(--white);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .footer-brand-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
       color: var(--blue-200);
-      opacity: 0.7;
+      line-height: 1.75;
+      opacity: 0.8;
+      max-width: 230px;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-btn-submit {
+      display: inline-block;
+      background: var(--blue-600);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      padding: 9px 18px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .footer-btn-submit:hover { background: var(--blue-800); }
+
+    .footer-col-title {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue-200);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    .footer-nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-nav-list li a {
+      font-size: 13px;
+      color: var(--blue-200);
+      opacity: 0.75;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .footer-nav-list li a:hover { opacity: 1; }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .footer-bottom-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      color: var(--blue-200);
+      opacity: 0.4;
+    }
+
+    .footer-region-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .footer-region-pill {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(181, 212, 244, 0.18);
+      color: var(--blue-200);
+      opacity: 0.55;
+    }
+
+    .footer-accordion-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+
+    .footer-accordion-header .footer-col-title {
+      margin-bottom: 0;
+    }
+
+    .footer-chevron {
+      width: 14px;
+      height: 14px;
+      color: var(--blue-200);
+      opacity: 0.45;
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .footer-accordion-header[aria-expanded="true"] .footer-chevron {
+      transform: rotate(180deg);
     }
 
     /* ANIMATIONS */
@@ -640,6 +787,70 @@
       .controls { padding: 0 1.25rem 1.5rem; }
       .section-divider { padding: 0 1.25rem 1.25rem; }
       .articles-grid { padding: 0 1.25rem 4rem; grid-template-columns: 1fr; }
+
+      .footer-main {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0;
+      }
+
+      .footer-brand-col {
+        padding: 2rem 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+
+      .footer-tagline { max-width: 100%; }
+
+      .footer-btn-submit {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 11px 18px;
+      }
+
+      .footer-nav-col {
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding: 0 1.25rem;
+      }
+
+      .footer-nav-col:last-child {
+        border-bottom: none;
+      }
+
+      .footer-col-title { display: none; }
+      .footer-accordion-header { display: flex; }
+      .footer-accordion-header .footer-col-title { display: block; }
+
+      .footer-nav-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 0;
+        padding-bottom: 14px;
+      }
+
+      .footer-nav-list[hidden] { display: none; }
+
+      .footer-nav-list li a {
+        display: block;
+        padding: 6px 0;
+        font-size: 13px;
+      }
+
+      .footer-bottom-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0;
+        padding: 1.25rem;
+      }
+
+      .footer-copy { line-height: 1.7; }
+      .footer-region-pills { display: none; }
+    }
+
+    @media (min-width: 641px) and (max-width: 768px) {
+      .footer-main { grid-template-columns: 1fr 1fr; }
+      .footer-brand-col { grid-column: 1 / -1; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1112,23 +1323,6 @@
       animation: shimmer 1.4s infinite;
       border-radius: 6px;
     }
-
-    /* FOOTER */
-    footer {
-      background: var(--blue-900);
-      color: var(--blue-200);
-      padding: 2.5rem 2rem;
-      text-align: center;
-    }
-
-    .footer-brand {
-      font-family: 'Lora', serif;
-      font-size: 18px;
-      color: white;
-      margin-bottom: 6px;
-    }
-
-    .footer-sub { font-size: 12px; opacity: 0.7; }
 
     /* ANIMATIONS */
     @keyframes fadeUp {

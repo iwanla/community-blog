@@ -44,4 +44,21 @@ function initMobileNav() {
   });
 }
 
+function initFooterAccordions() {
+  document.querySelectorAll(".footer-accordion-header").forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetId = button.getAttribute("aria-controls");
+      const list = targetId ? document.getElementById(targetId) : null;
+      if (!list) {
+        return;
+      }
+
+      const isOpen = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!isOpen));
+      list.hidden = isOpen;
+    });
+  });
+}
+
 initMobileNav();
+initFooterAccordions();
