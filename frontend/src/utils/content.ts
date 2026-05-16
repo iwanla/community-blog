@@ -1,4 +1,9 @@
-export function escapeHtml(value = "") {
+type ListBlock = {
+  type: "ul" | "ol";
+  items: string[];
+};
+
+export function escapeHtml(value = ""): string {
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -7,7 +12,7 @@ export function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-export function markdownToPlainText(value = "") {
+export function markdownToPlainText(value = ""): string {
   return String(value)
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
     .replace(/(^|\s)(#{1,6})\s+/g, "$1")
@@ -19,21 +24,21 @@ export function markdownToPlainText(value = "") {
     .trim();
 }
 
-export function htmlToPlainText(value = "") {
+export function htmlToPlainText(value = ""): string {
   const template = document.createElement("template");
   template.innerHTML = sanitizeHtml(value);
   return (template.content.textContent || "").replace(/\s+/g, " ").trim();
 }
 
-export function contentToPlainText(value = "") {
+export function contentToPlainText(value = ""): string {
   return looksLikeHtml(value) ? htmlToPlainText(value) : markdownToPlainText(value);
 }
 
-export function contentToHtml(value = "") {
+export function contentToHtml(value = ""): string {
   return looksLikeHtml(value) ? sanitizeHtml(value) : markdownToHtml(value);
 }
 
-export function sanitizeHtml(value = "") {
+export function sanitizeHtml(value = ""): string {
   const template = document.createElement("template");
   template.innerHTML = String(value || "");
   const allowedTags = new Set(["P", "BR", "STRONG", "EM", "U", "S", "A", "H2", "H3", "OL", "UL", "LI", "BLOCKQUOTE"]);
@@ -51,11 +56,11 @@ export function sanitizeHtml(value = "") {
   return output.innerHTML;
 }
 
-export function markdownToHtml(value = "") {
+export function markdownToHtml(value = ""): string {
   const lines = String(value || "").replace(/\r\n?/g, "\n").split("\n");
   const html = [];
   let paragraph = [];
-  let list = null;
+  let list: ListBlock | null = null;
 
   const flushParagraph = () => {
     if (!paragraph.length) {
@@ -115,11 +120,11 @@ export function markdownToHtml(value = "") {
   return html.join("\n");
 }
 
-function looksLikeHtml(value) {
+function looksLikeHtml(value: string) {
   return /<\/?[a-z][\s\S]*>/i.test(String(value || ""));
 }
 
-function sanitizeNode(node, allowedTags) {
+function sanitizeNode(node: ChildNode, allowedTags: Set<string>): Node | null {
   if (node.nodeType === Node.TEXT_NODE) {
     return document.createTextNode(node.textContent || "");
   }
@@ -128,7 +133,7 @@ function sanitizeNode(node, allowedTags) {
     return null;
   }
 
-  const element = node;
+  const element = node as Element;
   const tag = element.tagName;
 
   if (!allowedTags.has(tag)) {
@@ -167,7 +172,7 @@ function sanitizeNode(node, allowedTags) {
   return clean;
 }
 
-function renderInline(value) {
+function renderInline(value: string): string {
   let html = escapeHtml(value);
 
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_match, label, url) => {

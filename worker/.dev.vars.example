@@ -1,0 +1,6 @@
+ADMIN_TOKEN=local-admin-token
+ASSET_PUBLIC_BASE_URL=http://localhost:8787/assets
+
+# Optional: only needed when testing real Telegram notifications.
+# TELEGRAM_BOT_TOKEN=
+# TELEGRAM_CHAT_ID=

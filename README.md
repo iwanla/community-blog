@@ -14,7 +14,7 @@ The platform is designed as a serverless application on the Cloudflare ecosystem
 
 | Layer | Technology | Purpose |
 | --- | --- | --- |
-| Frontend | Static HTML, CSS, JavaScript | Public pages, article submission, admin dashboard |
+| Frontend | Vite, Vue 3, Vue Router | Public pages, article submission, admin dashboard |
 | Hosting | Cloudflare Pages | Static frontend hosting |
 | API | Cloudflare Workers | Serverless backend API |
 | Router | Hono | Lightweight Worker routing |
@@ -28,20 +28,15 @@ The platform is designed as a serverless application on the Cloudflare ecosystem
 ```text
 .
 ├── frontend/
-│   ├── index.html          # Homepage: article list, search, category filter
-│   ├── article.html        # Article detail page
-│   ├── submit.html         # Community article submission form
-│   ├── admin.html          # Admin moderation dashboard
-│   ├── css/
-│   │   └── style.css       # Shared frontend stylesheet
-│   └── js/
-│       ├── api.js          # All frontend API calls
-│       ├── i18n.js         # ID/EN translation utilities
-│       ├── nav.js          # Shared nav and mobile drawer behavior
-│       ├── home.js         # Homepage behavior
-│       ├── article.js      # Article detail behavior
-│       ├── submit.js       # Submit form validation and upload flow
-│       └── admin.js        # Admin dashboard behavior
+│   ├── index.html          # Vite app shell
+│   ├── package.json        # Vue/Vite frontend scripts
+│   ├── public/             # Static assets copied as-is to dist
+│   └── src/
+│       ├── views/          # Home, article, submit, admin routes
+│       ├── components/     # Shared layout components
+│       ├── services/api.ts # All frontend API calls
+│       ├── i18n/           # ID/EN translation utilities
+│       └── utils/          # Content sanitizer and helpers
 │
 ├── worker/
 │   ├── src/
@@ -101,6 +96,13 @@ ASSET_PUBLIC_BASE_URL=http://localhost:8787/assets
 
 This file is intentionally ignored by Git.
 
+You can start from the example file:
+
+```bash
+cd worker
+cp .dev.vars.example .dev.vars
+```
+
 ### 2. Apply Local D1 Migrations
 
 ```bash
@@ -139,32 +141,40 @@ Expected response:
 {"ok":true,"service":"jelajah-blog-api"}
 ```
 
-### 4. Start the Frontend
+### 4. Install and Start the Frontend
 
-Use a static server instead of opening files through `file://`.
+Vite serves the Vue SPA locally.
 
 ```bash
 cd frontend
-python3 -m http.server 5173
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
 Open:
 
 ```text
-http://localhost:5173/index.html
-http://localhost:5173/submit.html
-http://localhost:5173/admin.html
+http://localhost:5173/
+http://localhost:5173/submit
+http://localhost:5173/admin
 ```
 
 ### 5. Local API URL
 
-For local end-to-end testing, `frontend/js/api.js` must point to the local Worker:
+For local end-to-end testing, the frontend automatically uses the local Worker when hosted on `localhost`:
 
-```js
-const API_BASE_URL = "http://localhost:8787";
+```text
+http://localhost:8787
 ```
 
-Before production deployment, this must point to the deployed Worker URL or be changed to environment-aware logic.
+Override it with `VITE_API_BASE_URL` when needed.
+
+Create `frontend/.env.local` from `frontend/.env.example`:
+
+```env
+VITE_API_BASE_URL=http://localhost:8787
+```
 
 ## Development Workflow
 
@@ -172,9 +182,9 @@ Recommended local test flow:
 
 1. Start the Worker API.
 2. Start the frontend static server.
-3. Open `submit.html`.
+3. Open `/submit`.
 4. Submit an article with a valid cover image.
-5. Open `admin.html`.
+5. Open `/admin`.
 6. Use the local admin token:
 
 ```text
@@ -183,7 +193,7 @@ local-admin-token
 
 7. Confirm the article appears in the pending list.
 8. Approve the article.
-9. Open `index.html` and confirm the article appears publicly.
+9. Open `/` and confirm the article appears publicly.
 10. Open the article detail page.
 
 Additional cases to test:
@@ -324,6 +334,14 @@ TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 ```
 
+Use `frontend/.env.local` for the frontend:
+
+```env
+VITE_API_BASE_URL=http://localhost:8787
+```
+
+Do not put `ADMIN_TOKEN` in `frontend/.env.local`. Vite exposes `VITE_*` values to the browser bundle, so the admin token must stay in Worker `.dev.vars` locally and Cloudflare Worker secrets in production.
+
 ### Production
 
 Use Cloudflare secrets for sensitive values:
@@ -336,6 +354,12 @@ npx wrangler secret put TELEGRAM_CHAT_ID
 ```
 
 Non-secret values such as `ASSET_PUBLIC_BASE_URL` can be configured in `wrangler.toml` under `[vars]`.
+
+For Cloudflare Pages, configure the frontend environment variable:
+
+```env
+VITE_API_BASE_URL=https://jelajah-blog-api.iwanlaudin01.workers.dev
+```
 
 ## Deployment
 
@@ -375,7 +399,7 @@ npm run deploy
 
 Before deploying the frontend to Cloudflare Pages:
 
-1. Ensure `frontend/js/api.js` points to the deployed Worker API.
+1. Set `VITE_API_BASE_URL` in Cloudflare Pages environment variables.
 2. Confirm the Worker CORS configuration allows the frontend origin.
 3. Deploy the `frontend/` directory as a static site.
 4. Test the full submit and moderation flow in production.
@@ -389,19 +413,15 @@ cd worker
 npm run typecheck
 ```
 
-Frontend JavaScript syntax checks:
+Frontend type check and build:
 
 ```bash
-node --check frontend/js/api.js
-node --check frontend/js/nav.js
-node --check frontend/js/home.js
-node --check frontend/js/article.js
-node --check frontend/js/submit.js
-node --check frontend/js/admin.js
-node --check frontend/js/i18n.js
+cd frontend
+npm run typecheck
+npm run build
 ```
 
-Ensure all frontend `fetch()` calls stay centralized in `frontend/js/api.js`:
+Ensure all frontend `fetch()` calls stay centralized in `frontend/src/services/api.ts`:
 
 ```bash
 rg -n "fetch\\(" frontend
@@ -410,7 +430,7 @@ rg -n "fetch\\(" frontend
 Expected result:
 
 ```text
-frontend/js/api.js
+frontend/src/services/api.ts
 ```
 
 ## Security Notes
@@ -426,7 +446,7 @@ frontend/js/api.js
 
 The project is close to deployment, but verify these items before production:
 
-- `frontend/js/api.js` must not point to `http://localhost:8787` in production.
+- `VITE_API_BASE_URL` must point to the deployed Worker API in production.
 - `worker/wrangler.toml` must use the real Cloudflare D1 `database_id`.
 - `ASSET_PUBLIC_BASE_URL` must be configured for production image URLs.
 - Production Cloudflare secrets must be set.

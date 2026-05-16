@@ -7,11 +7,11 @@ JelajahTaliabu is a serverless community blog for stories, tourism, culture, foo
 ```text
 Browser
   |
-  | static HTML/CSS/JS
+  | static Vite/Vue/TypeScript bundle
   v
 Cloudflare Pages
   |
-  | fetch() from frontend/js/api.js
+  | fetch() from frontend/src/services/api.ts
   v
 Cloudflare Worker API (Hono)
   |
@@ -22,30 +22,46 @@ Cloudflare Worker API (Hono)
   +--> Telegram Bot API: admin submission notifications
 ```
 
-The frontend is static. All API calls from the frontend must go through `frontend/js/api.js`.
+The frontend is static. All API calls from the frontend must go through `frontend/src/services/api.ts`.
 
 ## Frontend
 
-The frontend lives in `frontend/` and is deployed to Cloudflare Pages.
+The frontend lives in `frontend/` and is deployed to Cloudflare Pages as a static Vue SPA.
 
-Main pages:
+Runtime stack:
 
-- `index.html`: homepage, approved article list, search, category filters.
-- `article.html`: article detail page loaded by `?slug=...`.
-- `submit.html`: community submission form with cover upload.
-- `admin.html`: moderation dashboard for pending submissions.
+- Vite
+- Vue 3
+- Vue Router
+- TypeScript
+- Quill loaded from `frontend/public/vendor/quill/` for the rich-text submit editor.
 
-Main JavaScript modules:
+Routes:
 
-- `js/api.js`: the only place where `fetch()` calls are made.
-- `js/home.js`: homepage rendering and filters.
-- `js/article.js`: article detail rendering, related posts, sharing metadata.
-- `js/submit.js`: form validation and multipart submission.
-- `js/admin.js`: pending post moderation actions.
-- `js/i18n.js`: Indonesian and English copy, metadata helpers, language switching.
-- `js/nav.js`: shared navigation and mobile drawer behavior.
+- `/`: homepage, approved article list, search, and category filters.
+- `/posts/:slug`: article detail route.
+- `/submit`: community submission form with cover upload and rich-text content.
+- `/admin`: moderation dashboard for pending and reviewed submissions.
 
-The frontend currently uses client-side metadata updates for article details. Static metadata exists in the initial HTML, then `article.js` updates title, description, OpenGraph, Twitter, canonical, and JSON-LD after the API response.
+Main frontend modules:
+
+- `frontend/src/services/api.ts`: the only place where `fetch()` calls are made.
+- `frontend/src/router.ts`: Vue Router route definitions and language query synchronization.
+- `frontend/src/i18n/index.ts`: translation helpers, category labels, locale state, metadata helpers.
+- `frontend/src/i18n/locales/*.json`: Indonesian and English UI text and category labels.
+- `frontend/src/views/*.vue`: page-level route views.
+- `frontend/src/components/*.vue`: shared header and footer.
+- `frontend/src/utils/*.ts`: content sanitizing, dummy fallback posts, and metadata helpers.
+
+The frontend uses client-side metadata updates. Static metadata exists in `frontend/index.html`, then route views update title, description, OpenGraph, Twitter, canonical, and JSON-LD after route data is available.
+
+Frontend build-time environment:
+
+```env
+VITE_API_BASE_URL=https://jelajah-blog-api.iwanlaudin01.workers.dev
+```
+
+`VITE_API_BASE_URL` is public and embedded into the browser bundle by Vite. It must only contain the public Worker API base URL. Admin and Telegram tokens must never be stored in frontend env variables.
 
 ## Worker API
 
@@ -93,8 +109,8 @@ Authorization: Bearer <ADMIN_TOKEN>
 
 ### Article Submission
 
-1. User fills `submit.html` and uploads a cover image.
-2. `submit.js` validates required fields, content length, image type, and image size.
+1. User opens `/submit`, fills the Vue form, writes content in Quill, and uploads a cover image.
+2. `SubmitView.vue` validates required fields, content length, image type, and image size.
 3. Frontend sends `multipart/form-data` to `POST /api/posts`.
 4. Worker validates the request again.
 5. Worker inserts a D1 row with `status = 'pending'`.
@@ -104,7 +120,7 @@ Authorization: Bearer <ADMIN_TOKEN>
 
 ### Moderation
 
-1. Admin opens `admin.html` and enters `ADMIN_TOKEN`.
+1. Admin opens `/admin` and enters `ADMIN_TOKEN`.
 2. Frontend calls `GET /api/admin/posts/pending`.
 3. Admin approves, rejects, or deletes a post.
 4. Worker updates D1 status and writes an `audit_logs` row.
@@ -156,7 +172,9 @@ The public image URL is generated only when `ASSET_PUBLIC_BASE_URL` is configure
 ## Security Boundaries
 
 - Secrets are Cloudflare Worker secrets, not frontend values.
+- Frontend `VITE_*` values are public browser bundle values.
 - `ADMIN_TOKEN` protects all admin endpoints.
+- The admin token is entered manually in `/admin`, stored in `sessionStorage`, and sent as `Authorization: Bearer <ADMIN_TOKEN>`.
 - Public D1 queries must filter by `status = 'approved'`.
 - Server-side validation is required even when frontend validation exists.
 - Cover upload accepts only JPEG, PNG, and WebP.

@@ -2,7 +2,7 @@
 
 This project deploys two separate targets:
 
-- Frontend: static files in `frontend/` deployed to Cloudflare Pages.
+- Frontend: Vite/Vue app in `frontend/` built to `frontend/dist` and deployed to Cloudflare Pages.
 - API: Cloudflare Worker in `worker/` deployed with Wrangler.
 
 ## Prerequisites
@@ -32,37 +32,15 @@ cd /Users/iwanlaudin/Development/community-blog/worker
 npx wrangler login
 ```
 
-## Frontend Deploy
+## Recommended Deploy Order
 
-The detected Cloudflare Pages project is:
+Deploy in this order so the frontend build points to a verified API URL:
 
-```text
-jelajah-taliabu
-```
-
-Deploy from the repository root:
-
-```bash
-cd /Users/iwanlaudin/Development/community-blog
-./worker/node_modules/.bin/wrangler pages deploy frontend --project-name jelajah-taliabu
-```
-
-Alternative from `worker/`:
-
-```bash
-cd /Users/iwanlaudin/Development/community-blog/worker
-npx wrangler pages deploy ../frontend --project-name jelajah-taliabu
-```
-
-After deploy, verify the frontend:
-
-```bash
-curl -I https://jelajah-taliabu.pages.dev/
-curl -I https://jelajah-taliabu.pages.dev/robots.txt
-curl -I https://jelajah-taliabu.pages.dev/sitemap.xml
-```
-
-Before deploying frontend, make sure `frontend/robots.txt` and `frontend/sitemap.xml` use the final production domain.
+1. Configure Worker secrets.
+2. Apply remote D1 migrations.
+3. Deploy and verify the Worker API.
+4. Configure the Cloudflare Pages `VITE_API_BASE_URL`.
+5. Build and deploy the frontend.
 
 ## Worker API Deploy
 
@@ -72,6 +50,26 @@ Run a typecheck first:
 cd /Users/iwanlaudin/Development/community-blog/worker
 npm run typecheck
 ```
+
+Set required Worker secrets. Do not commit these values.
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/worker
+npx wrangler secret put ADMIN_TOKEN
+npx wrangler secret put TELEGRAM_BOT_TOKEN
+npx wrangler secret put TELEGRAM_CHAT_ID
+```
+
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional for basic API operation, but Telegram notifications will be skipped without them.
+
+Apply remote D1 migrations:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/worker
+npm run db:migrate:remote
+```
+
+Remote migrations affect the production D1 database configured in `worker/wrangler.toml`.
 
 Deploy the Worker:
 
@@ -93,6 +91,69 @@ Expected health response:
 {"ok":true,"service":"jelajah-blog-api"}
 ```
 
+## Frontend Build And Deploy
+
+The detected Cloudflare Pages project is:
+
+```text
+jelajah-taliabu
+```
+
+Cloudflare Pages settings:
+
+```text
+Build command: npm run build
+Build output directory: dist
+Root directory: frontend
+```
+
+Set the Pages build-time API URL before deploying the frontend:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/frontend
+npx wrangler pages secret put VITE_API_BASE_URL --project-name jelajah-taliabu
+```
+
+When prompted for the value, enter the deployed Worker URL:
+
+```text
+https://jelajah-blog-api.iwanlaudin01.workers.dev
+```
+
+Although Wrangler stores this as a Pages secret, `VITE_API_BASE_URL` is still embedded in the browser bundle by Vite. Only use it for public values such as the API base URL. Never put `ADMIN_TOKEN` or Telegram tokens in frontend env variables.
+
+For manual deploy, build first:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/frontend
+npm install
+npm run build
+```
+
+Deploy from the repository root:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog
+./worker/node_modules/.bin/wrangler pages deploy frontend/dist --project-name jelajah-taliabu
+```
+
+Alternative from `worker/`:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/worker
+npx wrangler pages deploy ../frontend/dist --project-name jelajah-taliabu
+```
+
+After deploy, verify the frontend:
+
+```bash
+curl -I https://jelajah-taliabu.pages.dev/
+curl -I https://jelajah-taliabu.pages.dev/robots.txt
+curl -I https://jelajah-taliabu.pages.dev/sitemap.xml
+```
+
+Before deploying frontend, make sure `frontend/public/robots.txt` and `frontend/public/sitemap.xml` use the final production domain.
+
 ## D1 Migrations
 
 Apply local migrations:
@@ -102,27 +163,7 @@ cd /Users/iwanlaudin/Development/community-blog/worker
 npm run db:migrate:local
 ```
 
-Apply remote migrations:
-
-```bash
-cd /Users/iwanlaudin/Development/community-blog/worker
-npm run db:migrate:remote
-```
-
-Remote migrations affect the production D1 database configured in `worker/wrangler.toml`.
-
-## Required Secrets
-
-Set secrets with Wrangler. Do not commit these values.
-
-```bash
-cd /Users/iwanlaudin/Development/community-blog/worker
-npx wrangler secret put ADMIN_TOKEN
-npx wrangler secret put TELEGRAM_BOT_TOKEN
-npx wrangler secret put TELEGRAM_CHAT_ID
-```
-
-`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional for basic API operation, but Telegram notifications will be skipped without them.
+For production, apply remote migrations from the Worker deploy section before deploying the Worker.
 
 ## Production Bindings
 
@@ -135,13 +176,13 @@ Configured in `worker/wrangler.toml`:
 - R2 bucket: `jelajah-blog-assets`
 - Asset base URL: `ASSET_PUBLIC_BASE_URL`
 
-The frontend reads the production API from `frontend/js/api.js`.
+The frontend reads the production API from `frontend/src/services/api.ts`. Set `VITE_API_BASE_URL` in Cloudflare Pages environment variables when the Worker URL changes.
 
 ## Post-Deploy Checklist
 
 - Homepage loads articles without console API errors.
-- `submit.html` can submit a valid article with a JPG, PNG, or WebP cover under 2 MB.
-- `admin.html` can load pending posts with a valid admin token.
+- `/submit` can submit a valid article with a JPG, PNG, or WebP cover under 2 MB.
+- `/admin` can load pending posts with a valid admin token.
 - Approving a post makes it visible on the homepage.
 - Article detail page loads by slug.
 - Cover images load from the Worker `/assets/*` route.

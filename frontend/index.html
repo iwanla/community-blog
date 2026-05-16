@@ -10,204 +10,31 @@
   <meta property="og:description" content="Platform komunitas untuk berbagi cerita, wisata, budaya, dan kuliner seputar Pulau Taliabu." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="" />
-  <meta property="og:image" content="assets/img/logo.png" />
+  <meta property="og:image" content="/assets/img/logo.png" />
   <meta property="og:site_name" content="JelajahTaliabu" />
   <meta property="og:locale" content="id_ID" />
+  <meta property="article:published_time" content="" />
+  <meta property="article:modified_time" content="" />
+  <meta property="article:author" content="" />
+  <meta property="article:section" content="" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="JelajahTaliabu - Cerita dari Pulau Taliabu" />
   <meta name="twitter:description" content="Platform komunitas untuk berbagi cerita, wisata, budaya, dan kuliner seputar Pulau Taliabu." />
-  <meta name="twitter:image" content="assets/img/logo.png" />
+  <meta name="twitter:image" content="/assets/img/logo.png" />
+  <meta name="robots" content="index, follow" />
   <link rel="canonical" href="" />
-  <link rel="icon" href="assets/favicon.ico" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="/vendor/quill/quill.snow.css" />
   <script type="application/ld+json" id="structured-data">{}</script>
 </head>
 <body>
-
-  <!-- NAV -->
-  <nav class="site-top-nav">
-    <div class="nav-inner">
-      <a href="index.html" class="nav-brand" data-preserve-lang>
-        <div class="nav-brand-icon">
-          <img src="assets/img/logo.png" alt="" />
-        </div>
-        <span class="nav-brand-text">JelajahTaliabu</span>
-      </a>
-      <div class="nav-actions">
-        <ul class="nav-links">
-          <li><a href="#filter-pills" data-i18n="submit.category">Kategori</a></li>
-          <li><a href="#articles-grid" data-i18n="nav.articles">Artikel</a></li>
-        </ul>
-        <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
-        <a href="submit.html" class="btn-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
-      </div>
-      <div class="mobile-nav-controls">
-        <div class="lang-switcher" data-lang-switcher aria-label="Language"></div>
-        <button class="nav-toggle" type="button" aria-expanded="false" aria-label="Menu">
-          <span class="nav-toggle-lines" aria-hidden="true"></span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <div class="mobile-nav-overlay" data-mobile-nav-overlay hidden></div>
-  <aside class="mobile-nav-drawer" data-mobile-nav-drawer aria-hidden="true">
-    <div class="mobile-nav-head">
-      <span class="nav-brand-text">JelajahTaliabu</span>
-      <button class="mobile-nav-close" type="button" data-mobile-nav-close>
-        <span aria-hidden="true">&times;</span>
-        <span data-i18n="nav.close">Tutup</span>
-      </button>
-    </div>
-    <nav class="mobile-nav-menu" aria-label="Mobile navigation">
-      <a href="#filter-pills" data-i18n="submit.category" data-preserve-lang>Kategori</a>
-      <a href="#articles-grid" data-i18n="nav.articles" data-preserve-lang>Artikel</a>
-      <a href="submit.html" class="btn-submit mobile-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
-    </nav>
-  </aside>
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-eyebrow">
-      <span class="hero-eyebrow-line"></span>
-      <span data-i18n="hero.eyebrow">Pulau Taliabu, Maluku Utara</span>
-    </div>
-    <h1 class="hero-title"><span data-i18n="hero.titlePrefix">Jelajahi cerita &</span><br><em data-i18n="hero.titleEm">keajaiban</em> <span data-i18n="hero.titleSuffix">Taliabu</span></h1>
-    <p class="hero-sub" data-i18n="hero.subtitle">
-      Platform komunitas untuk berbagi wisata, budaya, kuliner, dan cerita warga dari seluruh penjuru Pulau Taliabu.
-    </p>
-  </section>
-
-  <!-- CONTROLS -->
-  <div class="controls">
-    <div class="search-wrap">
-      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input id="search-input" class="search-input" type="text" placeholder="Cari artikel..." data-i18n-placeholder="home.searchPlaceholder" />
-    </div>
-    <div class="filter-pills" id="filter-pills">
-      <button class="pill active" data-cat="semua" data-i18n="home.all">Semua</button>
-      <button class="pill" data-cat="Wisata">Wisata</button>
-      <button class="pill" data-cat="Budaya">Budaya</button>
-      <button class="pill" data-cat="Kuliner">Kuliner</button>
-      <button class="pill" data-cat="Sejarah">Sejarah</button>
-      <button class="pill" data-cat="Cerita Warga">Cerita Warga</button>
-      <button class="pill" data-cat="UMKM">UMKM</button>
-      <button class="pill" data-cat="Berita Lokal">Berita Lokal</button>
-      <button class="pill" data-cat="Politik">Politik</button>
-    </div>
-  </div>
-
-  <!-- SECTION HEADER -->
-  <div class="section-divider">
-    <h2 data-i18n="home.latest">Artikel Terbaru</h2>
-    <span id="article-count" data-i18n="home.loading">memuat...</span>
-  </div>
-
-  <!-- GRID -->
-  <main class="articles-grid" id="articles-grid">
-    <!-- Skeleton loading -->
-    <div class="card is-loading">
-      <div class="skeleton skeleton-img"></div>
-      <div class="card-body skeleton-card-body">
-        <div class="skeleton skeleton-line-sm"></div>
-        <div class="skeleton skeleton-line-lg"></div>
-        <div class="skeleton skeleton-line-md"></div>
-        <div class="skeleton skeleton-line-footer"></div>
-      </div>
-    </div>
-    <div class="card is-loading">
-      <div class="skeleton skeleton-img"></div>
-      <div class="card-body skeleton-card-body">
-        <div class="skeleton skeleton-line-sm"></div>
-        <div class="skeleton skeleton-line-lg"></div>
-        <div class="skeleton skeleton-line-md"></div>
-        <div class="skeleton skeleton-line-footer"></div>
-      </div>
-    </div>
-    <div class="card is-loading">
-      <div class="skeleton skeleton-img"></div>
-      <div class="card-body skeleton-card-body">
-        <div class="skeleton skeleton-line-sm"></div>
-        <div class="skeleton skeleton-line-lg"></div>
-        <div class="skeleton skeleton-line-md"></div>
-        <div class="skeleton skeleton-line-footer"></div>
-      </div>
-    </div>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="footer-main">
-      <div class="footer-brand-col">
-        <div class="footer-brand-name">
-          <div class="footer-brand-icon">
-            <img src="assets/img/logo.png" alt="" />
-          </div>
-          <span>JelajahTaliabu</span>
-        </div>
-        <p class="footer-tagline" data-i18n="footer.tagline">Platform komunitas untuk berbagi cerita, wisata, budaya, dan kuliner dari Pulau Taliabu.</p>
-        <a href="submit.html" class="footer-btn-submit" data-i18n="nav.submit" data-preserve-lang>+ Tulis Artikel</a>
-      </div>
-
-      <div class="footer-nav-col">
-        <div class="footer-col-title" data-i18n="submit.category">Kategori</div>
-        <button class="footer-accordion-header" type="button" aria-expanded="true" aria-controls="footer-nav-kategori">
-          <span class="footer-col-title" data-i18n="submit.category">Kategori</span>
-          <svg class="footer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <ul class="footer-nav-list" id="footer-nav-kategori">
-          <li><a href="index.html#filter-pills" data-i18n="category.wisata" data-preserve-lang>Wisata</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.kuliner" data-preserve-lang>Kuliner</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.budaya" data-preserve-lang>Budaya</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.sejarah" data-preserve-lang>Sejarah</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.umkm" data-preserve-lang>UMKM</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.beritaLokal" data-preserve-lang>Berita Lokal</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.ceritaWarga" data-preserve-lang>Cerita Warga</a></li>
-          <li><a href="index.html#filter-pills" data-i18n="category.politik" data-preserve-lang>Politik</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-nav-col">
-        <div class="footer-col-title" data-i18n="footer.platform">Platform</div>
-        <button class="footer-accordion-header" type="button" aria-expanded="false" aria-controls="footer-nav-platform">
-          <span class="footer-col-title" data-i18n="footer.platform">Platform</span>
-          <svg class="footer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <ul class="footer-nav-list" id="footer-nav-platform" hidden>
-          <li><a href="#" data-i18n="footer.about">Tentang Kami</a></li>
-          <li><a href="#" data-i18n="footer.writingGuide">Panduan Menulis</a></li>
-          <li><a href="#" data-i18n="footer.contentPolicy">Kebijakan Konten</a></li>
-          <li><a href="#" data-i18n="footer.contact">Hubungi Kami</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="footer-bottom-inner">
-        <div class="footer-copy" data-i18n="footer.copy">&copy; 2026 JelajahTaliabu. Ditulis oleh warga, untuk semua orang.</div>
-        <div class="footer-region-pills">
-          <span class="footer-region-pill">Taliabu Barat</span>
-          <span class="footer-region-pill">Taliabu Barat Laut</span>
-          <span class="footer-region-pill">Taliabu Utara</span>
-          <span class="footer-region-pill">Taliabu Timur</span>
-          <span class="footer-region-pill">Taliabu Timur Selatan</span>
-          <span class="footer-region-pill">Taliabu Selatan</span>
-          <span class="footer-region-pill">Tabona</span>
-          <span class="footer-region-pill">Lede</span>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <script type="module" src="js/nav.js"></script>
-  <script type="module" src="js/home.js"></script>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

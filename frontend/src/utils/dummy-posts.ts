@@ -1,12 +1,19 @@
-export const DUMMY_POSTS = [
+import type { Post } from "../types";
+
+export const DUMMY_POSTS: Post[] = [
   {
     id: "dummy-1",
     slug: "pantai-dama-taliabu",
     title: "Pantai Dama, Surga Tersembunyi di Ujung Barat Taliabu",
+    excerpt: "",
     category: "Wisata",
     location: "Taliabu Barat",
     author_name: "Iwan Maulana",
-    author_contact: "0812xxxx",
+    author_email: "",
+    updated_at: "",
+    approved_at: "",
+    status: "",
+    rejection_reason: "",
     image_url: "",
     content:
       "Hamparan pasir putih yang belum banyak terjamah wisatawan, air laut biru jernih yang memantulkan langit sore hari menjadi daya tarik utama Pantai Dama.\n\nTerletak di ujung barat Pulau Taliabu, pantai ini dapat dicapai dengan berkendara sekitar 45 menit dari pusat kota Bobong. Jalan menuju lokasi masih sederhana, tetapi pemandangan sepanjang perjalanan membuatnya terasa sepadan.\n\nKeindahan utama Pantai Dama terletak pada kejernihan airnya. Pada saat air surut, terumbu karang warna-warni terlihat jelas dari permukaan.",
@@ -16,10 +23,15 @@ export const DUMMY_POSTS = [
     id: "dummy-2",
     slug: "ikan-bakar-woda",
     title: "Ikan Bakar Woda: Cita Rasa Laut yang Tak Terlupakan",
+    excerpt: "",
     category: "Kuliner",
     location: "Bobong",
     author_name: "Siti Rahmawati",
-    author_contact: "0813xxxx",
+    author_email: "",
+    updated_at: "",
+    approved_at: "",
+    status: "",
+    rejection_reason: "",
     image_url: "",
     content:
       "Resep turun-temurun yang menggunakan bumbu rempah khas Taliabu membuat ikan bakar ini punya karakter rasa yang unik dan tak mudah dilupakan.\n\nWoda adalah nama jenis ikan laut yang banyak ditemukan di perairan sekitar Pulau Taliabu. Dagingnya padat dengan serat halus, cocok untuk dibakar dengan bumbu kuning khas Maluku.\n\nKunci kelezatannya ada pada campuran kunyit, serai, bawang merah, dan cabai rawit yang diulek kasar.",
@@ -29,10 +41,15 @@ export const DUMMY_POSTS = [
     id: "dummy-3",
     slug: "tari-tradisional-taliabu",
     title: "Mengenal Tari Adat yang Masih Hidup di Taliabu Timur",
+    excerpt: "",
     category: "Budaya",
     location: "Taliabu Timur",
     author_name: "Yusuf Halim",
-    author_contact: "0814xxxx",
+    author_email: "",
+    updated_at: "",
+    approved_at: "",
+    status: "",
+    rejection_reason: "",
     image_url: "",
     content:
       "Gerakan tangan yang lembut namun penuh makna membuat tarian adat ini menjadi bagian penting dalam upacara penyambutan tamu.\n\nDi Taliabu Timur, tradisi tari adat masih dijaga oleh kelompok seniman lokal yang mewarisi ilmu dari generasi sebelumnya. Setiap gerakan memiliki makna filosofis yang dalam.\n\nAnak-anak muda mulai kembali belajar tari ini lewat sanggar desa dan acara budaya tahunan.",
@@ -42,10 +59,15 @@ export const DUMMY_POSTS = [
     id: "dummy-4",
     slug: "sejarah-kesultanan-taliabu",
     title: "Jejak Kesultanan di Tanah Taliabu yang Terlupakan",
+    excerpt: "",
     category: "Sejarah",
     location: "Jorjoga",
     author_name: "Ahmad Basir",
-    author_contact: "0815xxxx",
+    author_email: "",
+    updated_at: "",
+    approved_at: "",
+    status: "",
+    rejection_reason: "",
     image_url: "",
     content:
       "Reruntuhan benteng tua di pinggir kota menjadi saksi bisu cerita masa lalu Taliabu yang pernah terhubung dengan jalur perdagangan rempah.\n\nWarga setempat masih menyimpan kisah tentang tokoh adat, pelabuhan lama, dan hubungan antarwilayah yang membentuk identitas Taliabu hari ini.\n\nDokumentasi sejarah lokal menjadi penting agar generasi muda dapat mengenali akar daerahnya sendiri.",
@@ -55,10 +77,15 @@ export const DUMMY_POSTS = [
     id: "dummy-5",
     slug: "umkm-tenun-taliabu",
     title: "Tenun Lokal Taliabu Mulai Tembus Pasar Nasional",
+    excerpt: "",
     category: "UMKM",
     location: "Taliabu Selatan",
     author_name: "Nur Azizah",
-    author_contact: "0816xxxx",
+    author_email: "",
+    updated_at: "",
+    approved_at: "",
+    status: "",
+    rejection_reason: "",
     image_url: "",
     content:
       "Kelompok pengrajin tenun ikat dari Desa Lede mulai mendapatkan perhatian dari pembeli luar daerah setelah aktif memasarkan karya mereka secara daring.\n\nMotif yang digunakan banyak mengambil inspirasi dari laut, tanaman, dan cerita adat setempat. Setiap kain dibuat secara bertahap dengan teknik manual yang membutuhkan ketelitian.\n\nDukungan pelatihan pemasaran dan akses pengiriman menjadi kunci agar UMKM lokal bisa tumbuh lebih jauh.",
@@ -68,10 +95,15 @@ export const DUMMY_POSTS = [
     id: "dummy-6",
     slug: "jalan-baru-bobong-lede",
     title: "Jalan Baru Bobong-Lede Resmi Dibuka untuk Umum",
+    excerpt: "",
     category: "Berita Lokal",
     location: "Bobong",
     author_name: "Redaksi",
-    author_contact: "",
+    author_email: "",
+    updated_at: "",
+    approved_at: "",
+    status: "",
+    rejection_reason: "",
     image_url: "",
     content:
       "Infrastruktur baru ini diharapkan memperlancar akses warga dan mendorong pertumbuhan ekonomi kawasan Taliabu bagian selatan.\n\nPembukaan jalan membuat waktu tempuh antarwilayah menjadi lebih singkat, terutama bagi warga yang membawa hasil kebun dan kebutuhan pokok.\n\nWarga berharap perawatan jalan dilakukan secara berkala agar manfaatnya dapat dirasakan dalam jangka panjang.",
@@ -79,6 +111,6 @@ export const DUMMY_POSTS = [
   },
 ];
 
-export function postsOrDummy(posts) {
+export function postsOrDummy(posts: Post[]): Post[] {
   return Array.isArray(posts) && posts.length > 0 ? posts : DUMMY_POSTS;
 }
