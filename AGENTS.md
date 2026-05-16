@@ -17,7 +17,9 @@
 
 | Layer             | Service                  | Fungsi                                        |
 | ----------------- | ------------------------ | --------------------------------------------- |
-| Frontend Hosting  | Cloudflare Pages         | Hosting static HTML/CSS/JS                    |
+| Frontend App      | Vite, Vue 3, Vue Router  | SPA public pages, submit form, admin dashboard |
+| Frontend Language | TypeScript               | Source frontend (`.ts` dan Vue SFC)           |
+| Frontend Hosting  | Cloudflare Pages         | Hosting static build output                   |
 | Backend API       | Cloudflare Workers       | API submit, list artikel, approve/reject       |
 | Backend Framework | Hono                     | Router ringan untuk Workers                   |
 | Database          | Cloudflare D1            | Simpan artikel, kategori, admin, audit logs   |
@@ -35,16 +37,28 @@
 ```
 jelajah-blog/
 ├── frontend/
-│   ├── index.html          # Homepage — daftar artikel, search, filter
-│   ├── submit.html         # Form submit artikel + upload cover image
-│   ├── admin.html          # Admin dashboard
-│   ├── assets/
-│   ├── css/
-│   └── js/
-│       ├── api.js          # Semua fetch() ke Workers API — satu-satunya tempat
-│       ├── home.js         # Logic homepage
-│       ├── article.js      # Logic halaman artikel
-│       └── submit.js       # Form handling, validasi, upload image
+│   ├── index.html          # Vite app shell
+│   ├── package.json        # Vue/Vite scripts
+│   ├── vite.config.ts
+│   ├── tsconfig*.json
+│   ├── public/             # Static assets copied as-is to dist
+│   │   ├── assets/
+│   │   └── vendor/quill/   # Quill vendor bundle for rich text editor
+│   └── src/
+│       ├── main.ts
+│       ├── router.ts       # Vue Router routes + lang sync
+│       ├── types.ts        # Shared frontend types
+│       ├── services/
+│       │   └── api.ts      # Semua fetch() ke Workers API — satu-satunya tempat
+│       ├── i18n/
+│       │   ├── index.ts
+│       │   └── locales/
+│       │       ├── id.json
+│       │       └── en.json
+│       ├── views/          # HomeView, ArticleView, SubmitView, AdminView
+│       ├── components/     # SiteHeader, SiteFooter
+│       ├── utils/
+│       └── assets/
 │
 ├── worker/
 │   ├── src/
@@ -143,12 +157,12 @@ Untuk MVP, satu artikel hanya menyimpan satu `cover_image_key` di tabel `posts`.
 
 ## API Reference
 
-**Base URL:**
+**Production Base URL:**
 ```
-https://api.jelajahtaliabu.workers.dev
+https://jelajah-blog-api.iwanlaudin01.workers.dev
 ```
 
-Semua `fetch()` ke API **hanya boleh** ada di `frontend/js/api.js`.
+Frontend membaca API base URL dari `VITE_API_BASE_URL` saat build. Semua `fetch()` ke API **hanya boleh** ada di `frontend/src/services/api.ts`.
 
 ### Public Endpoints
 
@@ -249,13 +263,21 @@ Reject  → status = rejected → artikel tidak tampil
 
 ## Environment Variables & Secrets
 
-Simpan di Cloudflare Secrets, **jangan hardcode** di source code.
+Simpan secrets di Cloudflare Worker Secrets, **jangan hardcode** di source code.
 
 | Key                  | Keterangan                         |
 | -------------------- | ---------------------------------- |
 | `ADMIN_TOKEN`        | Bearer token untuk admin endpoints |
 | `TELEGRAM_BOT_TOKEN` | Token Telegram Bot                 |
 | `TELEGRAM_CHAT_ID`   | Chat ID admin Telegram             |
+
+Frontend build-time env:
+
+| Key                 | Keterangan                           |
+| ------------------- | ------------------------------------ |
+| `VITE_API_BASE_URL` | Public Worker API base URL untuk Vite |
+
+`VITE_API_BASE_URL` adalah nilai publik yang masuk ke browser bundle. Jangan pernah menyimpan `ADMIN_TOKEN`, token Telegram, atau secret lain di env frontend.
 
 **Cloudflare Bindings** di `wrangler.toml`:
 
@@ -280,10 +302,12 @@ bucket_name = "jelajah-blog-assets"
 
 ### Struktur & Organisasi
 
-- Semua `fetch()` ke Workers API **hanya boleh** ada di `frontend/js/api.js`
+- Semua `fetch()` ke Workers API **hanya boleh** ada di `frontend/src/services/api.ts`
+- Frontend source memakai TypeScript. File `.vue` gunakan `<script setup lang="ts">`.
+- Route frontend baru dibuat sebagai Vue route di `frontend/src/router.ts` dan view di `frontend/src/views/`, bukan file HTML terpisah.
+- Copy UI dan label kategori dikelola di JSON locale `frontend/src/i18n/locales/*.json`; canonical kategori tetap di konstanta domain.
 - Route baru di Worker didaftarkan di `src/index.ts`, logic di `src/routes/`
 - Gunakan service layer (`src/services/`) untuk semua operasi D1, R2, dan Telegram — jangan taruh logic di route langsung
-- Halaman frontend baru mengikuti pola `index.html` / `submit.html` / `admin.html`
 
 ### Data & Logic
 
@@ -294,7 +318,8 @@ bucket_name = "jelajah-blog-assets"
 
 ### Security
 
-- `ADMIN_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` disimpan sebagai Cloudflare Secret — tidak boleh ada di frontend
+- `ADMIN_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` disimpan sebagai Cloudflare Worker Secret — tidak boleh ada di frontend
+- Frontend hanya boleh memakai env publik berprefix `VITE_*`, seperti `VITE_API_BASE_URL`.
 - Validasi semua input di Worker (`utils/validation.ts`) — jangan andalkan validasi frontend saja
 - Batasi tipe file upload: `jpeg`, `png`, `webp` — tolak tipe lain di Worker
 - Batasi ukuran file upload maksimal **2MB** di Worker
@@ -303,16 +328,16 @@ bucket_name = "jelajah-blog-assets"
 
 ### SEO
 
-- Setiap halaman artikel wajib punya `<title>`, `<meta description>`, dan OpenGraph tags
+- Setiap halaman artikel wajib punya `<title>`, `<meta description>`, OpenGraph tags, canonical URL, dan JSON-LD. Metadata di-update lewat helper frontend route/view.
 - URL struktur: `/posts/:slug`
-- Tambahkan `sitemap.xml` di fase growth
+- `robots.txt` dan `sitemap.xml` berada di `frontend/public/`.
 
 ---
 
 ## Categories
 
 ```
-Wisata · Budaya · Kuliner · Sejarah · Berita Lokal · Cerita Warga · UMKM
+Wisata · Budaya · Kuliner · Sejarah · Berita Lokal · Cerita Warga · UMKM · Politik
 ```
 
 ---
