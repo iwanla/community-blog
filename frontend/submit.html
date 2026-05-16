@@ -25,6 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="vendor/quill/quill.snow.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -137,14 +138,6 @@
               </label>
               <select id="categoryId" name="categoryId">
                 <option value="" disabled selected data-i18n="submit.categoryPlaceholder">Pilih kategori...</option>
-                <option value="1" data-i18n="category.wisata">Wisata</option>
-                <option value="2" data-i18n="category.budaya">Budaya</option>
-                <option value="3" data-i18n="category.kuliner">Kuliner</option>
-                <option value="4" data-i18n="category.sejarah">Sejarah</option>
-                <option value="5" data-i18n="category.beritaLokal">Berita Lokal</option>
-                <option value="6" data-i18n="category.ceritaWarga">Cerita Warga</option>
-                <option value="7" data-i18n="category.umkm">UMKM</option>
-                <option value="8" data-i18n="category.politik">Politik</option>
               </select>
               <div class="field-error" id="err-categoryId">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -200,7 +193,8 @@
             <label for="content">
               <span data-i18n="submit.content">Konten</span> <span class="required">*</span>
             </label>
-            <textarea id="content" name="content" placeholder="Tulis ceritamu di sini..." maxlength="10000" data-i18n-placeholder="submit.contentPlaceholder"></textarea>
+            <div id="content-editor" class="rich-editor"></div>
+            <textarea id="content" name="content" maxlength="10000" hidden></textarea>
             <div class="char-count" id="count-content">0 / 10.000</div>
             <div class="field-error" id="err-content">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -307,6 +301,7 @@
   </footer>
 
   <script type="module" src="js/nav.js"></script>
+  <script src="vendor/quill/quill.js"></script>
   <script type="module" src="js/submit.js"></script>
 </body>
 </html>

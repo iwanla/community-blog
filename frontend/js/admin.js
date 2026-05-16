@@ -1,5 +1,6 @@
 import { approvePost, deletePost, getPendingPosts, getReviewedPosts, rejectPost } from "./api.js";
 import { currentCanonicalUrl, defaultShareImage, getOgLocale, setLink, setMeta } from "./i18n.js";
+import { contentToPlainText } from "./markdown.js";
 
 const REVIEWED_PAGE_SIZE = 10;
 
@@ -89,11 +90,12 @@ async function loadAdminData() {
 }
 
 function renderPost(post) {
+  const previewText = contentToPlainText(post.content || post.excerpt || "").slice(0, 280);
   return `
     <article class="admin-card" data-id="${post.id}">
       <h2>${escapeHtml(post.title)}</h2>
       <div class="admin-meta">${escapeHtml(post.category || "-")} - ${escapeHtml(post.location || "-")} - ${escapeHtml(post.author_name || "-")}</div>
-      <p class="admin-excerpt">${escapeHtml(post.content || post.excerpt || "").slice(0, 280)}</p>
+      <p class="admin-excerpt">${escapeHtml(previewText)}</p>
       <div class="admin-actions">
         <button class="admin-btn" data-action="approve">Approve</button>
         <button class="admin-btn secondary" data-action="reject">Reject</button>

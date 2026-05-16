@@ -72,6 +72,11 @@ export function submitArticle(formData) {
   });
 }
 
+export async function getCategories() {
+  const result = await request("/api/categories");
+  return Array.isArray(result.data) ? result.data : [];
+}
+
 function adminHeaders(token, extra = {}) {
   return {
     Authorization: `Bearer ${token}`,

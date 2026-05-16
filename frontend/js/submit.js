@@ -1,6 +1,8 @@
-import { submitArticle } from "./api.js";
+import { getCategories, submitArticle } from "./api.js";
+import { sanitizeHtml } from "./markdown.js";
 import {
   applyTranslations,
+  categoryLabel,
   currentCanonicalUrl,
   defaultShareImage,
   getLocale,
@@ -16,6 +18,10 @@ const ALLOWED_COVER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const form = document.querySelector("#submit-form");
 const successScreen = document.querySelector("#success-screen");
 const preview = document.querySelector("#img-preview");
+const contentInput = document.getElementById("content");
+const contentEditor = document.getElementById("content-editor");
+const categorySelect = document.getElementById("categoryId");
+let quill = null;
 
 function renderPageMeta() {
   const title = t("meta.submitTitle");
@@ -57,6 +63,7 @@ function setupCharCount(inputId, countId, max) {
 
   input.addEventListener("input", updateCounter);
   updateCounter();
+  return updateCounter;
 }
 
 function setError(fieldId, show) {
@@ -67,6 +74,9 @@ function setError(fieldId, show) {
   }
 
   field.classList.toggle("error", show);
+  if (fieldId === "content") {
+    contentEditor?.classList.toggle("error", show);
+  }
   error.classList.toggle("show", show);
 }
 
@@ -90,7 +100,8 @@ function validateCover(file) {
 }
 
 function validate() {
-  const requiredFields = ["authorName", "authorEmail", "title", "categoryId", "location", "content"];
+  syncEditorContent();
+  const requiredFields = ["authorName", "authorEmail", "title", "categoryId", "location"];
   let valid = true;
 
   requiredFields.forEach((fieldId) => {
@@ -100,8 +111,8 @@ function validate() {
     valid = valid && !isMissing;
   });
 
-  const content = document.getElementById("content").value.trim();
-  if (content.length < 150) {
+  const contentText = getEditorText();
+  if (contentText.length < 150 || contentText.length > 10000) {
     setError("content", true);
     valid = false;
   }
@@ -114,11 +125,32 @@ function validate() {
   return valid;
 }
 
+async function loadCategories() {
+  try {
+    const categories = await getCategories();
+    const placeholder = categorySelect.querySelector("option[value='']");
+    categorySelect.innerHTML = "";
+    if (placeholder) {
+      categorySelect.appendChild(placeholder);
+    }
+
+    categories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = String(category.id);
+      option.textContent = categoryLabel(category.name);
+      categorySelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 function buildPayload() {
+  const content = syncEditorContent();
   const formData = new FormData();
   formData.set("title", document.getElementById("title").value.trim());
-  formData.set("content", document.getElementById("content").value.trim());
-  formData.set("excerpt", document.getElementById("content").value.trim().slice(0, 160));
+  formData.set("content", content);
+  formData.set("excerpt", getEditorText().slice(0, 160));
   formData.set("authorName", document.getElementById("authorName").value.trim());
   formData.set("authorEmail", document.getElementById("authorEmail").value.trim());
   formData.set("categoryId", document.getElementById("categoryId").value);
@@ -151,10 +183,61 @@ function resetForm() {
   successScreen.classList.remove("show");
   preview.classList.remove("show");
   preview.innerHTML = "";
+  quill?.setText("");
+  contentInput.value = "";
   setSubmitting(false);
   document.getElementById("count-title").textContent = `${(0).toLocaleString(getLocale())} / ${(120).toLocaleString(getLocale())}`;
   document.getElementById("count-content").textContent = `${(0).toLocaleString(getLocale())} / ${(10000).toLocaleString(getLocale())}`;
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setupEditor() {
+  quill = new window.Quill(contentEditor, {
+    theme: "snow",
+    placeholder: t("submit.contentPlaceholder"),
+    modules: {
+      toolbar: [
+        [{ header: [2, 3, false] }],
+        ["bold", "italic", "underline"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["blockquote", "link"],
+        ["clean"],
+      ],
+    },
+  });
+
+  quill.on("text-change", () => {
+    syncEditorContent();
+    updateContentCounter();
+    setError("content", false);
+  });
+
+  syncEditorContent();
+  updateContentCounter();
+}
+
+function syncEditorContent() {
+  const html = quill?.getSemanticHTML ? quill.getSemanticHTML() : quill?.root.innerHTML || "";
+  const clean = sanitizeHtml(html).trim();
+  contentInput.value = clean;
+  return clean;
+}
+
+function getEditorText() {
+  return (quill?.getText() || "").replace(/\s+/g, " ").trim();
+}
+
+function updateContentCounter() {
+  const counter = document.getElementById("count-content");
+  const length = getEditorText().length;
+  counter.textContent = `${length.toLocaleString(getLocale())} / ${(10000).toLocaleString(getLocale())}`;
+  counter.className = "char-count";
+  if (length > 9000) {
+    counter.classList.add("warn");
+  }
+  if (length >= 10000) {
+    counter.classList.add("over");
+  }
 }
 
 function setupCoverPreview() {
@@ -204,9 +287,10 @@ form.addEventListener("submit", async (event) => {
 
 document.getElementById("reset-form").addEventListener("click", resetForm);
 
-["authorName", "authorEmail", "title", "categoryId", "location", "coverImage", "content"].forEach(clearErrorOnInput);
+["authorName", "authorEmail", "title", "categoryId", "location", "coverImage"].forEach(clearErrorOnInput);
 setupCharCount("title", "count-title", 120);
-setupCharCount("content", "count-content", 10000);
+setupEditor();
 setupCoverPreview();
 applyTranslations();
+loadCategories();
 renderPageMeta();

@@ -38,7 +38,8 @@ export function validateSubmitForm(form: FormData): { data?: SubmitPostInput; er
     return { error: "Title must be 120 characters or fewer" };
   }
 
-  if (content.length < 150 || content.length > 10000) {
+  const contentText = stripHtml(content);
+  if (contentText.length < 150 || contentText.length > 10000) {
     return { error: "Content must be between 150 and 10000 characters" };
   }
 
@@ -75,6 +76,19 @@ export function validateSubmitForm(form: FormData): { data?: SubmitPostInput; er
 function stringField(form: FormData, key: string): string {
   const value = form.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function stripHtml(value: string): string {
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function isFile(value: unknown): value is File {

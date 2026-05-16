@@ -1,4 +1,5 @@
 import { getApprovedPosts, getPostBySlug } from "./api.js";
+import { contentToHtml, contentToPlainText, escapeHtml } from "./markdown.js";
 import { postsOrDummy } from "./dummy-posts.js";
 import {
   absoluteUrl,
@@ -26,15 +27,6 @@ const catStyle = {
   Politik: { text: "cat-berita", bg: "cat-bg-berita" },
 };
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function initials(name) {
   return String(name || t("article.anonymous"))
     .split(" ")
@@ -49,17 +41,8 @@ function getSlug() {
   return new URLSearchParams(window.location.search).get("slug") || "";
 }
 
-function contentToHtml(value) {
-  return String(value || "")
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean)
-    .map((block) => `<p>${escapeHtml(block).replaceAll("\n", "<br>")}</p>`)
-    .join("\n");
-}
-
 function textExcerpt(value, max = 160) {
-  const text = String(value || "").replace(/\s+/g, " ").trim();
+  const text = contentToPlainText(value);
   return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text;
 }
 

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { adminRoutes } from "./routes/admin";
+import { categoryRoutes } from "./routes/categories";
 import { postRoutes } from "./routes/posts";
 import type { Bindings } from "./types";
 
@@ -37,6 +38,7 @@ app.get("/assets/*", async (c) => {
 });
 
 app.route("/api/posts", postRoutes);
+app.route("/api/categories", categoryRoutes);
 app.route("/api/admin", adminRoutes);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));

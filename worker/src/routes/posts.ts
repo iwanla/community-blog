@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { categoryExists } from "../services/category-service";
 import { attachCoverImage, createPendingPost, getApprovedPostBySlug, getPostById, listApprovedPosts } from "../services/post-service";
 import { uploadCoverImage } from "../services/r2-service";
 import { notifyNewSubmission } from "../services/telegram-service";
@@ -33,6 +34,10 @@ postRoutes.post("/", submitRateLimit, async (c) => {
 
   if (!validation.data) {
     return c.json({ error: validation.error || "Invalid request" }, 400);
+  }
+
+  if (!(await categoryExists(c.env, validation.data.categoryId))) {
+    return c.json({ error: "categoryId is invalid" }, 400);
   }
 
   const postId = await createPendingPost(c.env, validation.data);

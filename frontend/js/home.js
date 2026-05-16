@@ -1,4 +1,5 @@
 import { getApprovedPosts } from "./api.js";
+import { contentToPlainText } from "./markdown.js";
 import { postsOrDummy } from "./dummy-posts.js";
 import {
   absoluteUrl,
@@ -40,7 +41,7 @@ function escapeHtml(value = "") {
 }
 
 function excerpt(value, max = 100) {
-  const text = String(value || "").trim();
+  const text = contentToPlainText(value);
   return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text;
 }
 
@@ -105,7 +106,9 @@ function filterPosts() {
   return allPosts.filter((post) => {
     const matchCat = activeCategory === "semua" || post.category === activeCategory;
     const query = searchQuery.toLowerCase();
-    const searchable = [post.title, post.location, post.category, categoryLabel(post.category), post.content].join(" ").toLowerCase();
+    const searchable = [post.title, post.location, post.category, categoryLabel(post.category), contentToPlainText(post.content)]
+      .join(" ")
+      .toLowerCase();
     return matchCat && (!query || searchable.includes(query));
   });
 }
