@@ -85,7 +85,16 @@ export function formatDate(value?: string | number | Date, options: Intl.DateTim
 }
 
 export function setMeta(selector: string, content?: string) {
-  const tag = document.querySelector(selector);
+  let tag = document.querySelector(selector);
+  if (!tag) {
+    const match = selector.match(/^meta\[(name|property)="([^"]+)"\]$/);
+    if (match) {
+      tag = document.createElement("meta");
+      tag.setAttribute(match[1], match[2]);
+      document.head.appendChild(tag);
+    }
+  }
+
   if (tag) {
     tag.setAttribute("content", content || "");
   }

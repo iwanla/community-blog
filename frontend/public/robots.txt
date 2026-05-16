@@ -3,4 +3,4 @@ Allow: /
 
 Disallow: /admin
 
-Sitemap: https://jelajahtaliabu.pages.dev/sitemap.xml
+Sitemap: https://jelajah-taliabu.pages.dev/sitemap.xml
