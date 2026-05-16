@@ -152,7 +152,7 @@
     }
 
     .lang-switcher a[aria-current="true"] {
-      background: var(--white);
+      background: var(--blue-600);
       color: var(--white);
     }
 
