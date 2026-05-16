@@ -23,6 +23,7 @@ const catStyle = {
   "Berita Lokal": { text: "cat-berita", bg: "cat-bg-berita" },
   "Cerita Warga": { text: "cat-cerita", bg: "cat-bg-cerita" },
   UMKM: { text: "cat-umkm", bg: "cat-bg-umkm" },
+  Politik: { text: "cat-berita", bg: "cat-bg-berita" },
 };
 
 function escapeHtml(value = "") {

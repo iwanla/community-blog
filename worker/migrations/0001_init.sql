@@ -45,4 +45,5 @@ INSERT OR IGNORE INTO categories (name, slug, created_at) VALUES
     ('Sejarah', 'sejarah', datetime('now')),
     ('Berita Lokal', 'berita-lokal', datetime('now')),
     ('Cerita Warga', 'cerita-warga', datetime('now')),
-    ('UMKM', 'umkm', datetime('now'));
+    ('UMKM', 'umkm', datetime('now')),
+    ('Politik', 'politik', datetime('now'));

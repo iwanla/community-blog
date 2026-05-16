@@ -111,7 +111,7 @@ npm run db:migrate:local
 This creates the local D1 schema and inserts the default categories:
 
 ```text
-Wisata, Budaya, Kuliner, Sejarah, Berita Lokal, Cerita Warga, UMKM
+Wisata, Budaya, Kuliner, Sejarah, Berita Lokal, Cerita Warga, UMKM, Politik
 ```
 
 ### 3. Start the Worker API

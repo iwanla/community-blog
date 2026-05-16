@@ -1,6 +1,6 @@
 export const SUPPORTED_LANGS = ["id", "en"];
 
-export const CATEGORIES = ["Wisata", "Budaya", "Kuliner", "Sejarah", "Berita Lokal", "Cerita Warga", "UMKM"];
+export const CATEGORIES = ["Wisata", "Budaya", "Kuliner", "Sejarah", "Berita Lokal", "Cerita Warga", "UMKM", "Politik"];
 
 const CATEGORY_LABELS = {
   id: {
@@ -11,6 +11,7 @@ const CATEGORY_LABELS = {
     "Berita Lokal": "Berita Lokal",
     "Cerita Warga": "Cerita Warga",
     UMKM: "UMKM",
+    Politik: "Politik",
   },
   en: {
     Wisata: "Tourism",
@@ -20,6 +21,7 @@ const CATEGORY_LABELS = {
     "Berita Lokal": "Local News",
     "Cerita Warga": "Community Stories",
     UMKM: "Local Business",
+    Politik: "Politics",
   },
 };
 
@@ -58,6 +60,7 @@ const DICTIONARY = {
     "category.beritaLokal": "Berita Lokal",
     "category.ceritaWarga": "Cerita Warga",
     "category.umkm": "UMKM",
+    "category.politik": "Politik",
     "footer.subtitle": "Ditulis oleh warga, untuk semua orang.",
     "footer.tagline": "Platform komunitas untuk berbagi cerita, wisata, budaya, dan kuliner dari Pulau Taliabu.",
     "footer.platform": "Platform",
@@ -162,6 +165,7 @@ const DICTIONARY = {
     "category.beritaLokal": "Local News",
     "category.ceritaWarga": "Community Stories",
     "category.umkm": "Local Business",
+    "category.politik": "Politics",
     "footer.subtitle": "Written by locals, for everyone.",
     "footer.tagline": "A community platform for sharing stories, travel, culture, and food from Taliabu Island.",
     "footer.platform": "Platform",

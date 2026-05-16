@@ -23,6 +23,7 @@ const catStyle = {
   "Berita Lokal": { text: "cat-berita", bg: "cat-bg-berita" },
   "Cerita Warga": { text: "cat-cerita", bg: "cat-bg-cerita" },
   UMKM: { text: "cat-umkm", bg: "cat-bg-umkm" },
+  Politik: { text: "cat-berita", bg: "cat-bg-berita" },
 };
 
 let allPosts = [];
@@ -59,6 +60,8 @@ function placeholderIcon(category) {
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
     UMKM:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline stroke-linecap="round" stroke-linejoin="round" points="9 22 9 12 15 12 15 22"/></svg>',
+    Politik:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M6 18V9M10 18V9M14 18V9M18 18V9M4 9h16L12 3 4 9z"/></svg>',
   };
 
   return icons[category] || icons["Berita Lokal"];
