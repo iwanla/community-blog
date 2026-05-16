@@ -1,5 +1,14 @@
 import { submitArticle } from "./api.js";
-import { applyTranslations, getLocale, setMeta, t } from "./i18n.js";
+import {
+  applyTranslations,
+  currentCanonicalUrl,
+  defaultShareImage,
+  getLocale,
+  getOgLocale,
+  setLink,
+  setMeta,
+  t,
+} from "./i18n.js";
 
 const MAX_COVER_BYTES = 2 * 1024 * 1024;
 const ALLOWED_COVER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -9,10 +18,22 @@ const successScreen = document.querySelector("#success-screen");
 const preview = document.querySelector("#img-preview");
 
 function renderPageMeta() {
-  document.title = t("meta.submitTitle");
-  setMeta('meta[name="description"]', t("meta.submitDescription"));
-  setMeta('meta[property="og:title"]', t("meta.submitTitle"));
+  const title = t("meta.submitTitle");
+  const description = t("meta.submitDescription");
+  const url = currentCanonicalUrl();
+  const image = defaultShareImage();
+
+  document.title = title;
+  setMeta('meta[name="description"]', description);
+  setMeta('meta[property="og:title"]', title);
   setMeta('meta[property="og:description"]', t("meta.submitOgDescription"));
+  setMeta('meta[property="og:url"]', url);
+  setMeta('meta[property="og:image"]', image);
+  setMeta('meta[property="og:locale"]', getOgLocale());
+  setMeta('meta[name="twitter:title"]', title);
+  setMeta('meta[name="twitter:description"]', description);
+  setMeta('meta[name="twitter:image"]', image);
+  setLink('link[rel="canonical"]', url);
 }
 
 function setupCharCount(inputId, countId, max) {

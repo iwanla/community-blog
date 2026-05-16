@@ -1,6 +1,19 @@
 import { getApprovedPosts, getPostBySlug } from "./api.js";
 import { postsOrDummy } from "./dummy-posts.js";
-import { applyTranslations, categoryLabel, formatDate, setMeta, t, withLang } from "./i18n.js";
+import {
+  absoluteUrl,
+  applyTranslations,
+  categoryLabel,
+  currentCanonicalUrl,
+  defaultShareImage,
+  formatDate,
+  getOgLocale,
+  setJsonLd,
+  setLink,
+  setMeta,
+  t,
+  withLang,
+} from "./i18n.js";
 
 const catStyle = {
   Wisata: { text: "cat-wisata", bg: "cat-bg-wisata" },
@@ -42,6 +55,15 @@ function contentToHtml(value) {
     .filter(Boolean)
     .map((block) => `<p>${escapeHtml(block).replaceAll("\n", "<br>")}</p>`)
     .join("\n");
+}
+
+function textExcerpt(value, max = 160) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text;
+}
+
+function shareImageUrl(value) {
+  return value ? new URL(value, window.location.origin).toString() : defaultShareImage();
 }
 
 function renderPlaceholderIcon() {
@@ -100,16 +122,53 @@ function renderRelated(related) {
 
 function renderArticle(post, related) {
   const style = catStyle[post.category] || { text: "cat-cerita", bg: "cat-bg-cerita" };
-  const description = String(post.content || "").slice(0, 140);
+  const description = textExcerpt(post.excerpt || post.content, 160);
   const authorName = post.author_name || t("article.anonymous");
+  const pageTitle = `${post.title} - JelajahTaliabu`;
+  const canonicalUrl = currentCanonicalUrl();
+  const imageUrl = shareImageUrl(post.image_url);
   const shareUrl = encodeURIComponent(window.location.href);
   const shareText = encodeURIComponent(post.title || "");
 
-  document.title = `${post.title} - JelajahTaliabu`;
+  document.title = pageTitle;
   setMeta('meta[name="description"]', description);
   setMeta('meta[property="og:title"]', post.title);
   setMeta('meta[property="og:description"]', description);
-  setMeta('meta[property="og:image"]', post.image_url);
+  setMeta('meta[property="og:url"]', canonicalUrl);
+  setMeta('meta[property="og:image"]', imageUrl);
+  setMeta('meta[property="og:locale"]', getOgLocale());
+  setMeta('meta[property="article:published_time"]', post.created_at);
+  setMeta('meta[property="article:modified_time"]', post.approved_at || post.created_at);
+  setMeta('meta[property="article:author"]', authorName);
+  setMeta('meta[property="article:section"]', categoryLabel(post.category));
+  setMeta('meta[name="twitter:title"]', pageTitle);
+  setMeta('meta[name="twitter:description"]', description);
+  setMeta('meta[name="twitter:image"]', imageUrl);
+  setLink('link[rel="canonical"]', canonicalUrl);
+  setJsonLd("structured-data", {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description,
+    image: imageUrl,
+    datePublished: post.created_at,
+    dateModified: post.approved_at || post.created_at,
+    author: {
+      "@type": "Person",
+      name: authorName,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "JelajahTaliabu",
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("assets/img/logo.png"),
+      },
+    },
+    mainEntityOfPage: canonicalUrl,
+    articleSection: categoryLabel(post.category),
+    inLanguage: document.documentElement.lang,
+  });
 
   renderCover(post);
 
@@ -219,6 +278,11 @@ function copyLink() {
 async function init() {
   applyTranslations();
   document.title = t("meta.articleTitle");
+  setMeta('meta[property="og:url"]', currentCanonicalUrl());
+  setMeta('meta[property="og:image"]', defaultShareImage());
+  setMeta('meta[property="og:locale"]', getOgLocale());
+  setMeta('meta[name="twitter:image"]', defaultShareImage());
+  setLink('link[rel="canonical"]', currentCanonicalUrl());
 
   const slug = getSlug();
   if (!slug) {

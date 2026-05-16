@@ -1,4 +1,5 @@
 import { approvePost, deletePost, getPendingPosts, rejectPost } from "./api.js";
+import { currentCanonicalUrl, defaultShareImage, getOgLocale, setLink, setMeta } from "./i18n.js";
 
 const tokenInput = document.getElementById("admin-token");
 const form = document.getElementById("token-form");
@@ -6,6 +7,11 @@ const message = document.getElementById("admin-message");
 const list = document.getElementById("pending-posts");
 
 tokenInput.value = sessionStorage.getItem("adminToken") || "";
+setMeta('meta[property="og:url"]', currentCanonicalUrl());
+setMeta('meta[property="og:image"]', defaultShareImage());
+setMeta('meta[property="og:locale"]', getOgLocale());
+setMeta('meta[name="twitter:image"]', defaultShareImage());
+setLink('link[rel="canonical"]', currentCanonicalUrl());
 
 function escapeHtml(value = "") {
   return String(value)

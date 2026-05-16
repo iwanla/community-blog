@@ -1,6 +1,19 @@
 import { getApprovedPosts } from "./api.js";
 import { postsOrDummy } from "./dummy-posts.js";
-import { applyTranslations, categoryLabel, formatDate, setMeta, t, withLang } from "./i18n.js";
+import {
+  absoluteUrl,
+  applyTranslations,
+  categoryLabel,
+  currentCanonicalUrl,
+  defaultShareImage,
+  formatDate,
+  getOgLocale,
+  setJsonLd,
+  setLink,
+  setMeta,
+  t,
+  withLang,
+} from "./i18n.js";
 
 const catStyle = {
   Wisata: { text: "cat-wisata", bg: "cat-bg-wisata" },
@@ -133,9 +146,30 @@ function renderCategoryLabels() {
 }
 
 function renderPageMeta() {
-  document.title = t("meta.homeTitle");
-  setMeta('meta[name="description"]', t("meta.homeDescription"));
+  const title = t("meta.homeTitle");
+  const description = t("meta.homeDescription");
+  const url = currentCanonicalUrl();
+  const image = defaultShareImage();
+
+  document.title = title;
+  setMeta('meta[name="description"]', description);
+  setMeta('meta[property="og:title"]', title);
   setMeta('meta[property="og:description"]', t("meta.homeOgDescription"));
+  setMeta('meta[property="og:url"]', url);
+  setMeta('meta[property="og:image"]', image);
+  setMeta('meta[property="og:locale"]', getOgLocale());
+  setMeta('meta[name="twitter:title"]', title);
+  setMeta('meta[name="twitter:description"]', description);
+  setMeta('meta[name="twitter:image"]', image);
+  setLink('link[rel="canonical"]', url);
+  setJsonLd("structured-data", {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "JelajahTaliabu",
+    url: absoluteUrl("index.html"),
+    description,
+    inLanguage: document.documentElement.lang,
+  });
 }
 
 async function init() {

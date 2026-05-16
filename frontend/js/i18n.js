@@ -229,6 +229,10 @@ export function getLocale() {
   return getLang() === "en" ? "en-US" : "id-ID";
 }
 
+export function getOgLocale() {
+  return getLang() === "en" ? "en_US" : "id_ID";
+}
+
 export function t(key, replacements = {}) {
   const value = DICTIONARY[getLang()][key] || DICTIONARY.id[key] || key;
   return Object.entries(replacements).reduce(
@@ -265,6 +269,34 @@ export function setMeta(selector, content) {
   const tag = document.querySelector(selector);
   if (tag) {
     tag.setAttribute("content", content || "");
+  }
+}
+
+export function absoluteUrl(path = "") {
+  return new URL(path, window.location.origin).toString();
+}
+
+export function currentCanonicalUrl() {
+  const url = new URL(window.location.href);
+  url.hash = "";
+  return url.toString();
+}
+
+export function defaultShareImage() {
+  return absoluteUrl("assets/img/logo.png");
+}
+
+export function setLink(selector, href) {
+  const tag = document.querySelector(selector);
+  if (tag) {
+    tag.setAttribute("href", href || "");
+  }
+}
+
+export function setJsonLd(id, schema) {
+  const tag = document.getElementById(id);
+  if (tag) {
+    tag.textContent = JSON.stringify(schema);
   }
 }
 
