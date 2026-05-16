@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { approvePost, listPendingPosts, rejectPost, softDeletePost } from "../services/post-service";
+import { approvePost, listPendingPosts, listReviewedPosts, rejectPost, softDeletePost } from "../services/post-service";
 import type { Bindings } from "../types";
 import { requireAdmin } from "../utils/auth";
+import { parsePositiveInt } from "../utils/validation";
 
 export const adminRoutes = new Hono<{ Bindings: Bindings }>();
 
@@ -9,6 +10,14 @@ adminRoutes.use("*", requireAdmin);
 
 adminRoutes.get("/posts/pending", async (c) => {
   return c.json({ data: await listPendingPosts(c.env) });
+});
+
+adminRoutes.get("/posts/reviewed", async (c) => {
+  const page = parsePositiveInt(c.req.query("page") || null, 1);
+  const limit = parsePositiveInt(c.req.query("limit") || null, 10, 50);
+  const data = await listReviewedPosts(c.env, page, limit);
+
+  return c.json({ data, page, limit });
 });
 
 adminRoutes.patch("/posts/:id/approve", async (c) => {

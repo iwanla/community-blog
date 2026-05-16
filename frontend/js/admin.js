@@ -1,10 +1,19 @@
-import { approvePost, deletePost, getPendingPosts, rejectPost } from "./api.js";
+import { approvePost, deletePost, getPendingPosts, getReviewedPosts, rejectPost } from "./api.js";
 import { currentCanonicalUrl, defaultShareImage, getOgLocale, setLink, setMeta } from "./i18n.js";
+
+const REVIEWED_PAGE_SIZE = 10;
 
 const tokenInput = document.getElementById("admin-token");
 const form = document.getElementById("token-form");
 const message = document.getElementById("admin-message");
 const list = document.getElementById("pending-posts");
+const reviewedRows = document.getElementById("reviewed-posts");
+const reviewedPrev = document.getElementById("reviewed-prev");
+const reviewedNext = document.getElementById("reviewed-next");
+const reviewedPageLabel = document.getElementById("reviewed-page");
+
+let reviewedPage = 1;
+let reviewedHasNext = false;
 
 tokenInput.value = sessionStorage.getItem("adminToken") || "";
 setMeta('meta[property="og:url"]', currentCanonicalUrl());
@@ -42,6 +51,43 @@ async function loadPending() {
   }
 }
 
+async function loadReviewed() {
+  const token = tokenInput.value.trim();
+  if (!token) {
+    message.textContent = "Token admin wajib diisi.";
+    return;
+  }
+
+  reviewedRows.innerHTML = `<tr><td colspan="6">Memuat artikel approved / rejected...</td></tr>`;
+
+  try {
+    const result = await getReviewedPosts(token, { page: reviewedPage, limit: REVIEWED_PAGE_SIZE });
+    const posts = result.data;
+    reviewedHasNext = posts.length === REVIEWED_PAGE_SIZE;
+    reviewedPageLabel.textContent = `Halaman ${result.page}`;
+    reviewedPrev.disabled = reviewedPage <= 1;
+    reviewedNext.disabled = !reviewedHasNext;
+    reviewedRows.innerHTML = posts.length
+      ? posts.map(renderReviewedRow).join("")
+      : `<tr><td colspan="6">Belum ada artikel approved atau rejected.</td></tr>`;
+  } catch (error) {
+    reviewedRows.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
+    reviewedPrev.disabled = reviewedPage <= 1;
+    reviewedNext.disabled = true;
+  }
+}
+
+async function loadAdminData() {
+  const token = tokenInput.value.trim();
+  if (!token) {
+    message.textContent = "Token admin wajib diisi.";
+    return;
+  }
+
+  sessionStorage.setItem("adminToken", token);
+  await Promise.all([loadPending(), loadReviewed()]);
+}
+
 function renderPost(post) {
   return `
     <article class="admin-card" data-id="${post.id}">
@@ -57,9 +103,44 @@ function renderPost(post) {
   `;
 }
 
+function renderReviewedRow(post) {
+  const date = formatDate(post.updated_at || post.approved_at || post.created_at);
+  return `
+    <tr data-id="${post.id}">
+      <td>
+        <strong>${escapeHtml(post.title)}</strong>
+        ${post.rejection_reason ? `<div class="admin-meta">${escapeHtml(post.rejection_reason)}</div>` : ""}
+      </td>
+      <td><span class="status-badge ${escapeHtml(post.status)}">${escapeHtml(post.status)}</span></td>
+      <td>${escapeHtml(post.category || "-")}</td>
+      <td>${escapeHtml(post.author_name || "-")}</td>
+      <td>${escapeHtml(date)}</td>
+      <td><button class="admin-btn danger" data-action="delete-reviewed">Delete</button></td>
+    </tr>
+  `;
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  loadPending();
+  reviewedPage = 1;
+  loadAdminData();
 });
 
 list.addEventListener("click", async (event) => {
@@ -77,6 +158,7 @@ list.addEventListener("click", async (event) => {
   try {
     if (action === "approve") {
       await approvePost(token, id);
+      reviewedPage = 1;
     } else if (action === "reject") {
       const reason = prompt("Alasan reject:");
       if (!reason) {
@@ -84,12 +166,54 @@ list.addEventListener("click", async (event) => {
         return;
       }
       await rejectPost(token, id, reason);
+      reviewedPage = 1;
     } else if (action === "delete") {
       await deletePost(token, id);
     }
-    await loadPending();
+    await loadAdminData();
   } catch (error) {
     message.textContent = error.message;
     button.disabled = false;
   }
+});
+
+reviewedRows.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-action='delete-reviewed']");
+  const row = event.target.closest("[data-id]");
+  if (!button || !row) {
+    return;
+  }
+
+  const token = tokenInput.value.trim();
+  if (!token) {
+    message.textContent = "Token admin wajib diisi.";
+    return;
+  }
+
+  button.disabled = true;
+  try {
+    await deletePost(token, row.dataset.id);
+    await loadReviewed();
+  } catch (error) {
+    message.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+reviewedPrev.addEventListener("click", () => {
+  if (reviewedPage <= 1) {
+    return;
+  }
+
+  reviewedPage -= 1;
+  loadReviewed();
+});
+
+reviewedNext.addEventListener("click", () => {
+  if (!reviewedHasNext) {
+    return;
+  }
+
+  reviewedPage += 1;
+  loadReviewed();
 });

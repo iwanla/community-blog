@@ -32,8 +32,12 @@
     .token-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .token-form input { min-width: 260px; flex: 1; padding: 10px 12px; border: 1px solid rgba(4,44,83,.14); border-radius: 8px; }
     .admin-btn { border: 0; border-radius: 8px; padding: 10px 14px; background: #185fa5; color: white; cursor: pointer; }
+    .admin-btn:disabled { cursor: not-allowed; opacity: .6; }
     .admin-btn.secondary { background: #5f5e5a; }
     .admin-btn.danger { background: #a32d2d; }
+    .admin-section { margin-top: 28px; }
+    .admin-section-head { align-items: center; display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .admin-section-head h2 { font-size: 19px; margin: 0; }
     .admin-list { display: grid; gap: 12px; }
     .admin-card { background: white; border: 1px solid rgba(4,44,83,.1); border-radius: 8px; padding: 16px; }
     .admin-card h2 { font-size: 18px; margin: 0 0 8px; }
@@ -41,6 +45,16 @@
     .admin-excerpt { color: #333; line-height: 1.6; margin-bottom: 14px; }
     .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .admin-empty { padding: 24px; background: white; border-radius: 8px; color: #5f5e5a; }
+    .table-wrap { background: white; border: 1px solid rgba(4,44,83,.1); border-radius: 8px; overflow-x: auto; }
+    .admin-table { border-collapse: collapse; min-width: 760px; width: 100%; }
+    .admin-table th, .admin-table td { border-bottom: 1px solid rgba(4,44,83,.08); padding: 12px; text-align: left; vertical-align: top; }
+    .admin-table th { color: #5f5e5a; font-size: 12px; letter-spacing: 0; text-transform: uppercase; }
+    .admin-table tr:last-child td { border-bottom: 0; }
+    .status-badge { border-radius: 999px; color: white; display: inline-flex; font-size: 12px; line-height: 1; padding: 6px 8px; text-transform: capitalize; }
+    .status-badge.approved { background: #1f7a4d; }
+    .status-badge.rejected { background: #9a4b17; }
+    .reviewed-pagination { align-items: center; display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+    .reviewed-page { color: #5f5e5a; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -52,11 +66,47 @@
 
     <form class="token-form" id="token-form">
       <input id="admin-token" type="password" placeholder="ADMIN_TOKEN" autocomplete="current-password" />
-      <button class="admin-btn" type="submit">Muat Pending</button>
+      <button class="admin-btn" type="submit">Muat Data</button>
     </form>
 
-    <div id="admin-message" class="admin-empty">Masukkan token admin untuk memuat submission pending.</div>
-    <section class="admin-list" id="pending-posts"></section>
+    <div id="admin-message" class="admin-empty">Masukkan token admin untuk memuat data moderasi.</div>
+
+    <section class="admin-section">
+      <div class="admin-section-head">
+        <h2>Submission Pending</h2>
+      </div>
+      <section class="admin-list" id="pending-posts"></section>
+    </section>
+
+    <section class="admin-section" aria-labelledby="reviewed-title">
+      <div class="admin-section-head">
+        <h2 id="reviewed-title">Artikel Approved / Rejected</h2>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Judul</th>
+              <th>Status</th>
+              <th>Kategori</th>
+              <th>Penulis</th>
+              <th>Tanggal</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="reviewed-posts">
+            <tr>
+              <td colspan="6">Masukkan token admin untuk memuat data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="reviewed-pagination">
+        <button class="admin-btn secondary" type="button" id="reviewed-prev">Sebelumnya</button>
+        <span class="reviewed-page" id="reviewed-page">Halaman 1</span>
+        <button class="admin-btn secondary" type="button" id="reviewed-next">Berikutnya</button>
+      </div>
+    </section>
   </main>
 
   <script type="module" src="js/admin.js"></script>

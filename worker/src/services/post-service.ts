@@ -100,6 +100,24 @@ export async function listPendingPosts(env: Bindings) {
   return rows.results.map((row) => toAdminPost(env, row));
 }
 
+export async function listReviewedPosts(env: Bindings, page: number, limit: number) {
+  const offset = (page - 1) * limit;
+  const rows = await env.DB.prepare(
+    `
+    SELECT p.*, c.name AS category_name, c.slug AS category_slug
+    FROM posts p
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE p.status IN ('approved', 'rejected')
+    ORDER BY COALESCE(p.updated_at, p.approved_at, p.created_at) DESC
+    LIMIT ? OFFSET ?
+    `,
+  )
+    .bind(limit, offset)
+    .all<PostRow>();
+
+  return rows.results.map((row) => toAdminPost(env, row));
+}
+
 export async function approvePost(env: Bindings, postId: number, actor: string) {
   const now = new Date().toISOString();
   await env.DB.prepare(
@@ -146,6 +164,7 @@ function toPublicPost(env: Bindings, row: PostRow, includeContent = false) {
     location: row.location,
     coverImageUrl: publicImageUrl(env, row.cover_image_key),
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
     approvedAt: row.approved_at,
   };
 }

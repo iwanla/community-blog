@@ -46,7 +46,10 @@ function normalizePost(post) {
     author_email: post.authorEmail || "",
     image_url: post.coverImageUrl || "",
     created_at: post.createdAt,
+    updated_at: post.updatedAt,
     approved_at: post.approvedAt,
+    status: post.status || "",
+    rejection_reason: post.rejectionReason || "",
   };
 }
 
@@ -81,6 +84,19 @@ export async function getPendingPosts(token) {
     headers: adminHeaders(token),
   });
   return Array.isArray(result.data) ? result.data.map(normalizePost) : [];
+}
+
+export async function getReviewedPosts(token, { page = 1, limit = 10 } = {}) {
+  const result = await request("/api/admin/posts/reviewed", {
+    searchParams: { page, limit },
+    headers: adminHeaders(token),
+  });
+
+  return {
+    data: Array.isArray(result.data) ? result.data.map(normalizePost) : [],
+    page: result.page || page,
+    limit: result.limit || limit,
+  };
 }
 
 export function approvePost(token, id) {
