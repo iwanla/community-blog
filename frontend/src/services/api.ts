@@ -3,10 +3,27 @@ import type { ApiItemResponse, ApiListResponse, Category, Post, PostStatus, Revi
 
 const DEFAULT_PRODUCTION_API = "https://jelajah-blog-api.iwanlaudin01.workers.dev";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8787"
-    : DEFAULT_PRODUCTION_API);
+function isLocalHost(hostname: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+function resolveApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL;
+  const isLocalApp = isLocalHost(window.location.hostname);
+
+  if (!configuredUrl) {
+    return isLocalApp ? "http://localhost:8787" : DEFAULT_PRODUCTION_API;
+  }
+
+  const configuredHost = new URL(configuredUrl).hostname;
+  if (!isLocalApp && isLocalHost(configuredHost)) {
+    return DEFAULT_PRODUCTION_API;
+  }
+
+  return configuredUrl;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 type SearchParamValue = string | number | boolean | null | undefined;
 type RequestOptions = RequestInit & {
