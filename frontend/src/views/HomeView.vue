@@ -10,7 +10,6 @@ import type { CategoryStyle, CategoryStyleMap, Post } from "../types";
 
 const route = useRoute();
 const posts = ref<Post[]>([]);
-const activeCategory = ref("semua");
 const searchQuery = ref("");
 const isLoading = ref(true);
 
@@ -27,8 +26,10 @@ const catStyle: CategoryStyleMap = {
 
 const filteredPosts = computed(() => {
   const query = searchQuery.value.toLowerCase();
+  const routeCategory = Array.isArray(route.query.category) ? route.query.category[0] : route.query.category;
+  const activeCategory = routeCategory && CATEGORIES.includes(routeCategory) ? routeCategory : "semua";
   return posts.value.filter((post) => {
-    const matchCat = activeCategory.value === "semua" || post.category === activeCategory.value;
+    const matchCat = activeCategory === "semua" || post.category === activeCategory;
     const searchable = [post.title, post.location, post.category, categoryLabel(post.category), contentToPlainText(post.content)]
       .join(" ")
       .toLowerCase();
@@ -102,12 +103,6 @@ watch(() => route.fullPath, renderMeta);
         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
       <input v-model="searchQuery" class="search-input" type="text" :placeholder="t('home.searchPlaceholder')" />
-    </div>
-    <div id="filter-pills" class="filter-pills">
-      <button class="pill" :class="{ active: activeCategory === 'semua' }" type="button" @click="activeCategory = 'semua'">{{ t("home.all") }}</button>
-      <button v-for="category in CATEGORIES" :key="category" class="pill" :class="{ active: activeCategory === category }" type="button" @click="activeCategory = category">
-        {{ categoryLabel(category) }}
-      </button>
     </div>
   </div>
 

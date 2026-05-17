@@ -11,6 +11,10 @@ const platformOpen = ref(false);
 function localized(path: string, hash = ""): RouteLocationRaw {
   return { path, hash, query: { ...route.query, lang: getLang() } };
 }
+
+function categoryTarget(category: string): RouteLocationRaw {
+  return { path: "/", query: { lang: getLang(), category } };
+}
 </script>
 
 <template>
@@ -35,7 +39,7 @@ function localized(path: string, hash = ""): RouteLocationRaw {
         </button>
         <ul id="footer-nav-kategori" class="footer-nav-list" :hidden="!categoryOpen">
           <li v-for="category in CATEGORIES" :key="category">
-            <RouterLink :to="localized('/', '#filter-pills')">{{ categoryLabel(category) }}</RouterLink>
+            <RouterLink :to="categoryTarget(category)">{{ categoryLabel(category) }}</RouterLink>
           </li>
         </ul>
       </div>
@@ -47,8 +51,8 @@ function localized(path: string, hash = ""): RouteLocationRaw {
           <svg class="footer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
         </button>
         <ul id="footer-nav-platform" class="footer-nav-list" :hidden="!platformOpen">
-          <li><a href="#">{{ t("footer.about") }}</a></li>
-          <li><a href="#">{{ t("footer.writingGuide") }}</a></li>
+          <li><RouterLink :to="localized('/about')">{{ t("footer.about") }}</RouterLink></li>
+          <li><RouterLink :to="localized('/guide')">{{ t("footer.writingGuide") }}</RouterLink></li>
           <li><a href="#">{{ t("footer.contentPolicy") }}</a></li>
           <li><a href="#">{{ t("footer.contact") }}</a></li>
         </ul>
