@@ -58,8 +58,12 @@ type RawPost = Partial<{
   coverImageUrl: string;
   image_url: string;
   views: number;
+  views_count: number;
   likes: number;
+  likes_count: number;
   dislikes: number;
+  isFeatured: boolean;
+  is_featured: boolean;
   createdAt: string;
   created_at: string;
   updatedAt: string;
@@ -113,8 +117,11 @@ function normalizePost(post: RawPost): Post {
     author_email: post.authorEmail || post.author_email || "",
     image_url: post.coverImageUrl || post.image_url || "",
     views: Number(post.views || 0),
+    views_count: Number(post.views_count || post.views || 0),
     likes: Number(post.likes || 0),
+    likes_count: Number(post.likes_count || post.likes || 0),
     dislikes: Number(post.dislikes || 0),
+    is_featured: Boolean(post.isFeatured || post.is_featured),
     created_at: post.createdAt || post.created_at || "",
     updated_at: post.updatedAt || post.updated_at || "",
     approved_at: post.approvedAt || post.approved_at || "",
@@ -128,6 +135,11 @@ export async function getApprovedPosts({ page = 1, limit = 10, category }: { pag
     searchParams: { page, limit, category },
   });
   return Array.isArray(result.data) ? result.data.map(normalizePost) : [];
+}
+
+export async function getFeaturedPost(): Promise<Post | null> {
+  const result = await request<ApiItemResponse<RawPost | null>>("/api/posts/featured");
+  return result.data ? normalizePost(result.data) : null;
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {

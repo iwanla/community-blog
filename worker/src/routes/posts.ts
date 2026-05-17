@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { categoryExists } from "../services/category-service";
-import { attachCoverImage, createPendingPost, getApprovedPostBySlug, getPostById, listApprovedPosts } from "../services/post-service";
+import { attachCoverImage, createPendingPost, getApprovedPostBySlug, getFeaturedPost, getPostById, listApprovedPosts } from "../services/post-service";
 import { findApprovedPostIdBySlug, setReaction, trackView } from "../services/reaction-service";
 import { uploadCoverImage } from "../services/r2-service";
 import { notifyNewSubmission } from "../services/telegram-service";
@@ -19,6 +19,16 @@ postRoutes.get("/", async (c) => {
   const data = await listApprovedPosts(c.env, page, limit, category);
 
   return c.json({ data, page, limit });
+});
+
+postRoutes.get("/featured", async (c) => {
+  const post = await getFeaturedPost(c.env);
+
+  if (!post) {
+    return c.json({ data: null });
+  }
+
+  return c.json({ data: post });
 });
 
 postRoutes.get("/:slug", async (c) => {

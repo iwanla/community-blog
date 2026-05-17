@@ -14,6 +14,9 @@ export interface Post {
   views?: number;
   likes?: number;
   dislikes?: number;
+  views_count?: number;
+  likes_count?: number;
+  is_featured?: boolean;
   created_at: string;
   updated_at: string;
   approved_at: string;

@@ -39,6 +39,21 @@ export async function getApprovedPostBySlug(env: Bindings, slug: string) {
   return row ? toPublicPost(env, row, true) : null;
 }
 
+export async function getFeaturedPost(env: Bindings) {
+  const row = await env.DB.prepare(
+    `
+    SELECT p.*, c.name AS category_name, c.slug AS category_slug
+    FROM posts p
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE p.status = 'approved'
+    ORDER BY ((COALESCE(p.views, 0)) + (COALESCE(p.likes, 0) * 5)) DESC, p.approved_at DESC, p.created_at DESC
+    LIMIT 1
+    `,
+  ).first<PostRow>();
+
+  return row ? toPublicPost(env, row) : null;
+}
+
 export async function createPendingPost(env: Bindings, input: SubmitPostInput) {
   const now = new Date().toISOString();
   const slug = uniqueSlug(input.title);
