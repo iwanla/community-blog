@@ -1,8 +1,8 @@
 # JelajahTaliabu
 
-<div align="center" style="background:#ffffff;padding:32px 0;border-radius:16px;margin-bottom:24px;">
-  <img src="frontend/public/assets/img/logo.png" alt="JelajahTaliabu logo" width="180" />
-</div>
+ <p align="center">
+    <img src="frontend/public/assets/img/readme-banner.png" alt="JelajahTaliabu" height="300" />
+</p>
 
 JelajahTaliabu is a community blog for sharing stories, travel guides, culture, food, local news, and citizen experiences from Taliabu Island.
 
