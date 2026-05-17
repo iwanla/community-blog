@@ -56,11 +56,12 @@ Set required Worker secrets. Do not commit these values.
 ```bash
 cd /Users/iwanlaudin/Development/community-blog/worker
 npx wrangler secret put ADMIN_TOKEN
+npx wrangler secret put TURNSTILE_SECRET_KEY
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_CHAT_ID
 ```
 
-`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional for basic API operation, but Telegram notifications will be skipped without them.
+`TURNSTILE_SECRET_KEY` must be the production secret key for the Turnstile widget configured for `jelajahtaliabu.web.id`. `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional for basic API operation, but Telegram notifications will be skipped without them.
 
 Apply remote D1 migrations:
 
@@ -119,6 +120,15 @@ When prompted for the value, enter the deployed Worker URL:
 ```text
 https://jelajah-blog-api.iwanlaudin01.workers.dev
 ```
+
+Set the production Turnstile site key for the frontend:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/frontend
+npx wrangler pages secret put VITE_TURNSTILE_SITE_KEY --project-name jelajah-taliabu
+```
+
+When prompted, enter the production Turnstile site key for `jelajahtaliabu.web.id`. Do not use Cloudflare's test key `1x00000000000000000000AA` in production.
 
 Although Wrangler stores this as a Pages secret, `VITE_API_BASE_URL` is still embedded in the browser bundle by Vite. Only use it for public values such as the API base URL. Never put `ADMIN_TOKEN` or Telegram tokens in frontend env variables.
 

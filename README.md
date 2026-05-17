@@ -349,6 +349,7 @@ Use Cloudflare secrets for sensitive values:
 ```bash
 cd worker
 npx wrangler secret put ADMIN_TOKEN
+npx wrangler secret put TURNSTILE_SECRET_KEY
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_CHAT_ID
 ```
