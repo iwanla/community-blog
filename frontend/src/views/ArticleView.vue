@@ -91,6 +91,7 @@ function renderArticleMeta(value: Post) {
     description,
     url: canonicalUrl,
     image: imageUrl,
+    imageAlt: value.title,
     type: "article",
   });
   setMeta('meta[property="article:published_time"]', value.created_at);
