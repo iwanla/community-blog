@@ -26,6 +26,9 @@ export type PostRow = {
   category_slug: string | null;
   location: string | null;
   cover_image_key: string | null;
+  views: number;
+  likes: number;
+  dislikes: number;
   status: string;
   rejection_reason: string | null;
   created_at: string;
