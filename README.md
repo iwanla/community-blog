@@ -1,5 +1,9 @@
 # JelajahTaliabu
 
+<p align="center">
+  <img src="frontend/public/assets/img/logo.png" alt="JelajahTaliabu logo" width="120" />
+</p>
+
 JelajahTaliabu is a community blog for sharing stories, travel guides, culture, food, local news, and citizen experiences from Taliabu Island.
 
 The platform is designed as a serverless application on the Cloudflare ecosystem:
