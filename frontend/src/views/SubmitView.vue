@@ -372,7 +372,9 @@ onUnmounted(() => {
           </div>
           <div class="submit-field">
             <label for="content">{{ t("submit.content") }} <span class="required">*</span></label>
-            <div ref="editorEl" class="rich-editor" :class="{ error: errors.content }"></div>
+            <div class="rich-editor-shell" :class="{ error: errors.content }">
+              <div ref="editorEl" class="rich-editor"></div>
+            </div>
             <textarea id="content" v-model="form.content" maxlength="10000" hidden></textarea>
             <div class="char-count" :class="{ warn: contentText.length > 9000, over: contentText.length >= 10000 }">{{ contentCount }}</div>
             <div class="field-error" :class="{ show: errors.content }">{{ t("submit.contentMin") }}</div>

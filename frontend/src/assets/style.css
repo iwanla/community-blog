@@ -2105,6 +2105,10 @@
   resize: vertical;
 }
 
+.rich-editor-shell {
+  width: 100%;
+}
+
 .submit-field .ql-toolbar.ql-snow {
   border-color: var(--border);
   border-radius: 8px 8px 0 0;
@@ -2131,8 +2135,12 @@
   font-style: normal;
 }
 
-.submit-field .ql-container.ql-snow.error {
+.rich-editor-shell.error .ql-toolbar.ql-snow,
+.rich-editor-shell.error .ql-container.ql-snow {
   border-color: var(--red-600);
+}
+
+.rich-editor-shell.error .ql-container.ql-snow {
   background: var(--red-50);
 }
 
