@@ -147,9 +147,9 @@ npx wrangler pages deploy ../frontend/dist --project-name jelajah-taliabu
 After deploy, verify the frontend:
 
 ```bash
-curl -I https://jelajah-taliabu.pages.dev/
-curl -I https://jelajah-taliabu.pages.dev/robots.txt
-curl -I https://jelajah-taliabu.pages.dev/sitemap.xml
+curl -I https://jelajahtaliabu.web.id/
+curl -I https://jelajahtaliabu.web.id/robots.txt
+curl -I https://jelajahtaliabu.web.id/sitemap.xml
 ```
 
 Before deploying frontend, make sure `frontend/public/robots.txt` and `frontend/public/sitemap.xml` use the final production domain.
