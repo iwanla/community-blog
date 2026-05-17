@@ -30,6 +30,19 @@ type RequestOptions = RequestInit & {
   searchParams?: Record<string, SearchParamValue>;
 };
 
+export type ReactionType = "like" | "dislike" | "none";
+
+type TrackViewResponse = {
+  counted: boolean;
+  views: number;
+};
+
+type ReactResponse = {
+  ok: boolean;
+  likes: number;
+  dislikes: number;
+};
+
 type RawPost = Partial<{
   id: number | string;
   slug: string;
@@ -44,6 +57,9 @@ type RawPost = Partial<{
   author_email: string;
   coverImageUrl: string;
   image_url: string;
+  views: number;
+  likes: number;
+  dislikes: number;
   createdAt: string;
   created_at: string;
   updatedAt: string;
@@ -96,6 +112,9 @@ function normalizePost(post: RawPost): Post {
     author_name: post.authorName || post.author_name || "",
     author_email: post.authorEmail || post.author_email || "",
     image_url: post.coverImageUrl || post.image_url || "",
+    views: Number(post.views || 0),
+    likes: Number(post.likes || 0),
+    dislikes: Number(post.dislikes || 0),
     created_at: post.createdAt || post.created_at || "",
     updated_at: post.updatedAt || post.updated_at || "",
     approved_at: post.approvedAt || post.approved_at || "",
@@ -114,6 +133,20 @@ export async function getApprovedPosts({ page = 1, limit = 10, category }: { pag
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   const result = await request<ApiItemResponse<RawPost>>(`/api/posts/${encodeURIComponent(slug)}`);
   return result.data ? normalizePost(result.data) : null;
+}
+
+export function trackPostView(slug: string): Promise<TrackViewResponse> {
+  return request(`/api/posts/${encodeURIComponent(slug)}/view`, {
+    method: "POST",
+  });
+}
+
+export function reactToPost(slug: string, type: ReactionType): Promise<ReactResponse> {
+  return request(`/api/posts/${encodeURIComponent(slug)}/react`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type }),
+  });
 }
 
 export function submitArticle(formData: FormData): Promise<unknown> {

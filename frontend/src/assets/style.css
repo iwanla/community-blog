@@ -1073,6 +1073,8 @@
 
     .meta-item svg { width: 13px; height: 13px; opacity: 0.6; }
 
+    .meta-item.views-meta { margin-left: auto; }
+
     .meta-author {
       display: flex;
       align-items: center;
@@ -1127,13 +1129,95 @@
       color: var(--blue-800);
     }
 
+    /* REACTION BAR */
+    .reaction-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .reaction-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .react-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .react-btn svg { width: 15px; height: 15px; }
+
+    .react-btn:hover {
+      border-color: var(--gray-200);
+      color: var(--text-primary);
+    }
+
+    .react-btn:active { transform: scale(0.96); }
+
+    .react-btn.like-active {
+      background: var(--blue-50);
+      border-color: var(--blue-400);
+      color: var(--blue-600);
+    }
+
+    .react-btn.dislike-active {
+      background: var(--red-50);
+      border-color: var(--red-600);
+      color: var(--red-600);
+    }
+
+    .reaction-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .reaction-ratio {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .reaction-views {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .reaction-views svg { width: 14px; height: 14px; opacity: 0.5; }
+
     /* SHARE */
     .share-bar {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 2.5rem;
-      padding-top: 1.5rem;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
       border-top: 1px solid var(--border);
     }
 
@@ -1163,6 +1247,11 @@
     .share-btn:hover { border-color: var(--blue-400); color: var(--blue-600); }
     .share-btn svg { width: 13px; height: 13px; }
 
+    .share-btn .whatsapp-icon {
+      color: #25D366;
+      stroke: none;
+    }
+
     /* SIDEBAR */
     .sidebar {
       padding: 2.5rem 0 5rem;
@@ -1181,6 +1270,49 @@
       letter-spacing: 0.1em;
       margin-bottom: 1rem;
     }
+
+    /* STAT GRID */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.9rem;
+    }
+
+    .stat-card small {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .stat-card strong {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .stat-card strong svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .stat-card.stat-views strong { color: var(--text-secondary); }
+    .stat-card.stat-ratio strong { color: var(--teal-600); }
+    .stat-card.stat-likes strong { color: var(--blue-600); }
+    .stat-card.stat-dislikes strong { color: var(--red-600); }
 
     /* INFO CARD */
     .info-card {
@@ -1215,6 +1347,12 @@
     .info-text { flex: 1; }
     .info-text small { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 1px; }
     .info-text span { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+
+    .info-sep {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
 
     /* RELATED */
     .related-card {
@@ -1349,6 +1487,14 @@
       }
       .sidebar { padding-top: 0; }
       .article-wrap { padding-bottom: 2rem; }
+      .meta-item.views-meta { margin-left: 0; }
+      .reaction-bar { flex-wrap: wrap; gap: 8px; }
+      .reaction-views {
+        margin-left: 0;
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
     }
 
     @media (max-width: 640px) {

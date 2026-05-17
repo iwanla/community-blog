@@ -11,6 +11,9 @@ export interface Post {
   author_name: string;
   author_email: string;
   image_url: string;
+  views?: number;
+  likes?: number;
+  dislikes?: number;
   created_at: string;
   updated_at: string;
   approved_at: string;
