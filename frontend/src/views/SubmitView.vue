@@ -9,6 +9,7 @@ import type { Category } from "../types";
 
 const MAX_COVER_BYTES = 2 * 1024 * 1024;
 const ALLOWED_COVER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 const route = useRoute();
 const form = reactive({
@@ -20,7 +21,7 @@ const form = reactive({
   content: "",
 });
 type FormField = keyof typeof form;
-type ErrorField = FormField | "coverImage";
+type ErrorField = FormField | "coverImage" | "captcha";
 
 const categories = ref<Category[]>([]);
 const coverFile = ref<File | null>(null);
@@ -33,12 +34,16 @@ const errors = reactive<Record<ErrorField, boolean>>({
   location: false,
   content: false,
   coverImage: false,
+  captcha: false,
 });
 const submitting = ref(false);
 const submitted = ref(false);
 const editorEl = ref<HTMLElement | null>(null);
+const turnstileEl = ref<HTMLElement | null>(null);
+const captchaToken = ref("");
 const contentText = ref("");
 let quill: QuillInstance | null = null;
+let turnstileWidgetId: TurnstileWidgetId | null = null;
 
 const titleCount = computed(() => `${form.title.length.toLocaleString(getLocale())} / ${(120).toLocaleString(getLocale())}`);
 const contentCount = computed(() => `${contentText.value.length.toLocaleString(getLocale())} / ${(10000).toLocaleString(getLocale())}`);
@@ -77,6 +82,62 @@ function loadQuillScript(): Promise<void> {
   });
 }
 
+function loadTurnstileScript(): Promise<void> {
+  if (!TURNSTILE_SITE_KEY || window.turnstile) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-turnstile="true"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", reject, { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.async = true;
+    script.defer = true;
+    script.dataset.turnstile = "true";
+    script.onload = () => resolve();
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+function renderTurnstile() {
+  if (!TURNSTILE_SITE_KEY || !window.turnstile || !turnstileEl.value) {
+    return;
+  }
+  if (turnstileWidgetId) {
+    window.turnstile.remove(turnstileWidgetId);
+    turnstileWidgetId = null;
+  }
+  captchaToken.value = "";
+  turnstileWidgetId = window.turnstile.render(turnstileEl.value, {
+    sitekey: TURNSTILE_SITE_KEY,
+    theme: "light",
+    callback: (token) => {
+      captchaToken.value = token;
+      setError("captcha", false);
+    },
+    "expired-callback": () => {
+      captchaToken.value = "";
+      setError("captcha", true);
+    },
+    "error-callback": () => {
+      captchaToken.value = "";
+      setError("captcha", true);
+    },
+  });
+}
+
+function resetTurnstile() {
+  captchaToken.value = "";
+  if (window.turnstile && turnstileWidgetId) {
+    window.turnstile.reset(turnstileWidgetId);
+  }
+}
+
 function syncEditorContent() {
   const html = quill?.getSemanticHTML ? quill.getSemanticHTML() : quill?.root.innerHTML || "";
   form.content = sanitizeHtml(html).trim();
@@ -112,6 +173,10 @@ function validate() {
   const badCover = !validateCover(coverFile.value);
   setError("coverImage", badCover);
   valid = valid && !badCover;
+
+  const missingCaptcha = Boolean(TURNSTILE_SITE_KEY && !captchaToken.value);
+  setError("captcha", missingCaptcha);
+  valid = valid && !missingCaptcha;
   return valid;
 }
 
@@ -134,6 +199,9 @@ function buildPayload() {
   data.set("authorEmail", form.authorEmail.trim());
   data.set("categoryId", form.categoryId);
   data.set("location", form.location.trim());
+  if (captchaToken.value) {
+    data.set("cf-turnstile-response", captchaToken.value);
+  }
   if (coverFile.value) {
     data.set("coverImage", coverFile.value);
   }
@@ -153,6 +221,7 @@ async function handleSubmit() {
     submitted.value = true;
   } catch (error) {
     alert(error instanceof Error ? error.message : t("api.requestFailed"));
+    resetTurnstile();
   } finally {
     submitting.value = false;
   }
@@ -170,6 +239,7 @@ function resetForm() {
   });
   quill?.setText("");
   contentText.value = "";
+  resetTurnstile();
   submitted.value = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -197,6 +267,13 @@ onMounted(async () => {
     setError("content", false);
   });
   syncEditorContent();
+  try {
+    await loadTurnstileScript();
+    renderTurnstile();
+  } catch (error) {
+    console.error(error);
+    setError("captcha", true);
+  }
 });
 
 watch(() => route.fullPath, renderMeta);
@@ -204,11 +281,15 @@ watch(() => route.fullPath, renderMeta);
 watch(currentLang, () => {
   renderMeta();
   updateEditorPlaceholder();
+  renderTurnstile();
 });
 
 onUnmounted(() => {
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value);
+  }
+  if (window.turnstile && turnstileWidgetId) {
+    window.turnstile.remove(turnstileWidgetId);
   }
 });
 </script>
@@ -295,6 +376,14 @@ onUnmounted(() => {
             <textarea id="content" v-model="form.content" maxlength="10000" hidden></textarea>
             <div class="char-count" :class="{ warn: contentText.length > 9000, over: contentText.length >= 10000 }">{{ contentCount }}</div>
             <div class="field-error" :class="{ show: errors.content }">{{ t("submit.contentMin") }}</div>
+          </div>
+        </div>
+
+        <div v-if="TURNSTILE_SITE_KEY" class="submit-section">
+          <div class="submit-section-title">{{ t("submit.verificationSection") }}</div>
+          <div class="submit-field">
+            <div ref="turnstileEl" class="turnstile-widget" :class="{ error: errors.captcha }"></div>
+            <div class="field-error" :class="{ show: errors.captcha }">{{ t("submit.captchaError") }}</div>
           </div>
         </div>
 

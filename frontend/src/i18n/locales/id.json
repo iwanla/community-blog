@@ -105,6 +105,8 @@
     "submit.guidelineParagraphs": "Gunakan baris kosong untuk memisahkan paragraf",
     "submit.content": "Konten",
     "submit.contentPlaceholder": "Tulis ceritamu di sini...",
+    "submit.verificationSection": "Verifikasi",
+    "submit.captchaError": "Selesaikan verifikasi sebelum mengirim artikel.",
     "submit.button": "Kirim Artikel",
     "submit.note": "Dengan mengirim artikel, kamu menyetujui bahwa konten ini adalah karya asli dan sesuai dengan panduan komunitas JelajahTaliabu.",
     "submit.required": "Semua field wajib diisi.",

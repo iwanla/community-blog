@@ -105,6 +105,8 @@
     "submit.guidelineParagraphs": "Use blank lines to separate paragraphs",
     "submit.content": "Content",
     "submit.contentPlaceholder": "Write your story here...",
+    "submit.verificationSection": "Verification",
+    "submit.captchaError": "Complete the verification before submitting your article.",
     "submit.button": "Submit Article",
     "submit.note": "By submitting an article, you agree that this content is original and follows the JelajahTaliabu community guidelines.",
     "submit.required": "All fields are required.",

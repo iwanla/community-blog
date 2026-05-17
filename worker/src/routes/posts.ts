@@ -4,6 +4,7 @@ import { attachCoverImage, createPendingPost, getApprovedPostBySlug, getPostById
 import { findApprovedPostIdBySlug, setReaction, trackView } from "../services/reaction-service";
 import { uploadCoverImage } from "../services/r2-service";
 import { notifyNewSubmission } from "../services/telegram-service";
+import { verifyTurnstileToken } from "../services/turnstile-service";
 import type { Bindings } from "../types";
 import { getFingerprint } from "../utils/fingerprint";
 import { submitRateLimit } from "../utils/rate-limit";
@@ -69,6 +70,12 @@ postRoutes.post("/:slug/react", async (c) => {
 
 postRoutes.post("/", submitRateLimit, async (c) => {
   const form = await c.req.formData();
+  const turnstileToken = form.get("cf-turnstile-response");
+
+  if (typeof turnstileToken !== "string" || !(await verifyTurnstileToken(c.env, turnstileToken, c.req.header("CF-Connecting-IP")))) {
+    return c.json({ error: "Verification failed. Please try again." }, 400);
+  }
+
   const validation = validateSubmitForm(form);
 
   if (!validation.data) {
