@@ -5,6 +5,8 @@ JelajahTaliabu is a community blog for sharing stories, travel guides, culture, 
 The platform is designed as a serverless application on the Cloudflare ecosystem:
 
 - Visitors can browse approved articles.
+- Visitors can see a backend-selected featured article.
+- Visitors can add article views and like/dislike reactions.
 - Community members can submit articles with a cover image.
 - Submitted articles stay pending until an admin approves them.
 - Admins can approve, reject, or soft-delete submissions.
@@ -20,6 +22,7 @@ The platform is designed as a serverless application on the Cloudflare ecosystem
 | Router | Hono | Lightweight Worker routing |
 | Database | Cloudflare D1 | Posts, categories, audit logs |
 | Storage | Cloudflare R2 | Cover image storage |
+| Anti-abuse | Cloudflare Turnstile | Submission verification |
 | Notifications | Telegram Bot API | Admin notification for new submissions |
 | Deployment | Wrangler | Worker, D1, and R2 management |
 
@@ -44,8 +47,7 @@ The platform is designed as a serverless application on the Cloudflare ecosystem
 │   │   ├── routes/         # Public and admin API routes
 │   │   ├── services/       # D1, R2, and Telegram service logic
 │   │   └── utils/          # Auth, validation, slug, rate limit helpers
-│   ├── migrations/
-│   │   └── 0001_init.sql   # Initial D1 schema and category seed data
+│   ├── migrations/         # D1 schema, categories, reactions, view logs
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── wrangler.toml
@@ -56,8 +58,10 @@ The platform is designed as a serverless application on the Cloudflare ecosystem
 ## Features
 
 - Public article listing with category filtering.
+- Backend-selected featured article using `views + likes * 5`.
 - Public article detail page.
-- Community article submission with cover image upload.
+- Article view tracking and like/dislike reactions.
+- Community article submission with cover image upload and Turnstile verification.
 - Server-side validation for required fields, content length, image type, and image size.
 - Pending moderation workflow.
 - Admin approval, rejection, and soft delete.
@@ -88,6 +92,7 @@ Create `worker/.dev.vars`:
 ```env
 ADMIN_TOKEN=local-admin-token
 ASSET_PUBLIC_BASE_URL=http://localhost:8787/assets
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 
 # Optional: only needed when testing real Telegram notifications.
 # TELEGRAM_BOT_TOKEN=
@@ -174,6 +179,7 @@ Create `frontend/.env.local` from `frontend/.env.example`:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8787
+VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA
 ```
 
 ## Development Workflow
@@ -194,7 +200,9 @@ local-admin-token
 7. Confirm the article appears in the pending list.
 8. Approve the article.
 9. Open `/` and confirm the article appears publicly.
-10. Open the article detail page.
+10. Confirm the featured article section renders.
+11. Open the article detail page.
+12. Confirm view tracking and reactions update counters.
 
 Additional cases to test:
 
@@ -204,6 +212,7 @@ Additional cases to test:
 - Image larger than 2 MB.
 - Language switcher with `?lang=id` and `?lang=en`.
 - Mobile navigation drawer.
+- Featured article ordering when views and likes change.
 - Admin reject and delete actions.
 
 ## API Overview
@@ -224,10 +233,47 @@ GET /api/posts?page=1&limit=10&category=wisata
 Returns approved posts only.
 
 ```http
+GET /api/posts/featured
+```
+
+Returns one approved post ordered by:
+
+```text
+views + (likes * 5), then approved_at/created_at newest first
+```
+
+```http
 GET /api/posts/:slug
 ```
 
 Returns one approved post by slug.
+
+```http
+POST /api/posts/:slug/view
+```
+
+Tracks one view per request fingerprint.
+
+```http
+POST /api/posts/:slug/react
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "type": "like"
+}
+```
+
+`type` can be `like`, `dislike`, or `none`.
+
+```http
+GET /api/categories
+```
+
+Returns the category list.
 
 ```http
 POST /api/posts
@@ -245,6 +291,7 @@ authorEmail
 categoryId
 location
 coverImage
+cf-turnstile-response
 ```
 
 ### Admin Endpoints
@@ -257,6 +304,7 @@ Authorization: Bearer <ADMIN_TOKEN>
 
 ```http
 GET /api/admin/posts/pending
+GET /api/admin/posts/reviewed?page=1&limit=10
 PATCH /api/admin/posts/:id/approve
 PATCH /api/admin/posts/:id/reject
 DELETE /api/admin/posts/:id
@@ -275,7 +323,7 @@ Reject body:
 The D1 schema is defined in:
 
 ```text
-worker/migrations/0001_init.sql
+worker/migrations/
 ```
 
 Tables:
@@ -283,6 +331,18 @@ Tables:
 - `posts`
 - `categories`
 - `audit_logs`
+- `reactions`
+- `view_logs`
+
+`posts` stores denormalized engagement counters:
+
+```text
+views
+likes
+dislikes
+```
+
+`view_logs` and `reactions` provide basic duplicate protection by request fingerprint. The counters on `posts` are used for fast public reads and featured article scoring.
 
 Public queries must only expose posts with:
 
@@ -325,6 +385,7 @@ Use `worker/.dev.vars`:
 ```env
 ADMIN_TOKEN=local-admin-token
 ASSET_PUBLIC_BASE_URL=http://localhost:8787/assets
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 ```
 
 Optional:
@@ -338,9 +399,10 @@ Use `frontend/.env.local` for the frontend:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8787
+VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA
 ```
 
-Do not put `ADMIN_TOKEN` in `frontend/.env.local`. Vite exposes `VITE_*` values to the browser bundle, so the admin token must stay in Worker `.dev.vars` locally and Cloudflare Worker secrets in production.
+Do not put `ADMIN_TOKEN`, `TURNSTILE_SECRET_KEY`, Telegram tokens, or other private values in `frontend/.env.local`. Vite exposes `VITE_*` values to the browser bundle, so the frontend may only use public values such as `VITE_API_BASE_URL` and `VITE_TURNSTILE_SITE_KEY`.
 
 ### Production
 
@@ -360,6 +422,7 @@ For Cloudflare Pages, configure the frontend environment variable:
 
 ```env
 VITE_API_BASE_URL=https://jelajah-blog-api.iwanlaudin01.workers.dev
+VITE_TURNSTILE_SITE_KEY=<public-turnstile-site-key>
 ```
 
 ## Deployment
@@ -400,7 +463,7 @@ npm run deploy
 
 Before deploying the frontend to Cloudflare Pages:
 
-1. Set `VITE_API_BASE_URL` in Cloudflare Pages environment variables.
+1. Set `VITE_API_BASE_URL` and `VITE_TURNSTILE_SITE_KEY` in Cloudflare Pages environment variables.
 2. Confirm the Worker CORS configuration allows the frontend origin.
 3. Deploy the `frontend/` directory as a static site.
 4. Test the full submit and moderation flow in production.
@@ -440,6 +503,8 @@ frontend/src/services/api.ts
 - Keep admin endpoints protected with `Authorization: Bearer <ADMIN_TOKEN>`.
 - Do not expose pending, rejected, or deleted posts through public endpoints.
 - Validate all submit inputs on the Worker, not only in the browser.
+- Verify Turnstile tokens on the Worker before accepting public submissions.
+- Treat view/reaction fingerprints as duplicate-prevention signals, not authentication.
 - Keep `worker/.dev.vars` out of Git.
 - Use audit logs for admin moderation actions.
 
@@ -451,6 +516,7 @@ The project is close to deployment, but verify these items before production:
 - `worker/wrangler.toml` must use the real Cloudflare D1 `database_id`.
 - `ASSET_PUBLIC_BASE_URL` must be configured for production image URLs.
 - Production Cloudflare secrets must be set.
+- `VITE_TURNSTILE_SITE_KEY` must be configured in Cloudflare Pages.
 - Remote D1 migrations must be applied.
 
 ## License
