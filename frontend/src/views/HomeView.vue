@@ -25,8 +25,6 @@ const catStyle: CategoryStyleMap = {
   Politik: { text: "cat-berita", bg: "cat-bg-berita" },
 };
 
-const explorerCategories = ["Wisata", "Kuliner", "Budaya", "Sejarah"];
-
 const filteredPosts = computed(() => {
   const query = searchQuery.value.toLowerCase();
   const routeCategory = Array.isArray(route.query.category) ? route.query.category[0] : route.query.category;
@@ -51,13 +49,6 @@ const featuredPost = computed(() => {
   })[0];
 });
 
-const categoryCounts = computed(() => {
-  return posts.value.reduce<Record<string, number>>((counts, post) => {
-    counts[post.category] = (counts[post.category] || 0) + 1;
-    return counts;
-  }, {});
-});
-
 function excerpt(value: string, max = 100) {
   const text = contentToPlainText(value);
   return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text;
@@ -65,10 +56,6 @@ function excerpt(value: string, max = 100) {
 
 function categoryStyle(category: string): CategoryStyle {
   return catStyle[category] || { text: "cat-cerita", bg: "cat-bg-cerita" };
-}
-
-function categoryCountLabel(category: string) {
-  return t("home.categoryCount", { count: categoryCounts.value[category] || 0 });
 }
 
 function featuredScore(post: Post) {
@@ -150,33 +137,6 @@ watch(() => route.fullPath, renderMeta);
       <input v-model="searchQuery" class="search-input" type="text" :placeholder="t('home.searchPlaceholder')" />
     </div>
   </div>
-
-  <section class="cat-explorer" aria-labelledby="category-explorer-title">
-    <div class="section-header">
-      <h2 id="category-explorer-title" class="section-heading">{{ t("home.categoryExplorer") }}</h2>
-    </div>
-    <div class="cat-explorer-grid">
-      <RouterLink v-for="category in explorerCategories" :key="category" class="cat-explorer-card" :class="categoryStyle(category).bg" :to="{ path: '/', query: { category, lang: getLang() } }">
-        <div class="cat-explorer-icon" :class="categoryStyle(category).text" aria-hidden="true">
-          <svg v-if="category === 'Wisata'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 21c-4.418 0-8-3.582-8-8 0-5.523 8-13 8-13s8 7.477 8 13c0 4.418-3.582 8-8 8z" />
-            <circle cx="12" cy="13" r="2.5" />
-          </svg>
-          <svg v-else-if="category === 'Kuliner'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3v18M6 8c0-2.5 1.5-5 3-5M18 8c0-2.5-1.5-5-3-5M5 8h14M5 8c0 4 1 8 7 9M19 8c0 4-1 8-7 9" />
-          </svg>
-          <svg v-else-if="category === 'Budaya'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 19V6l12-3v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-3c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2z" />
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 8v4l3 3M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
-          </svg>
-        </div>
-        <div class="cat-explorer-name" :class="categoryStyle(category).text">{{ categoryLabel(category) }}</div>
-        <div class="cat-explorer-count">{{ isLoading ? t("home.loading") : categoryCountLabel(category) }}</div>
-      </RouterLink>
-    </div>
-  </section>
 
   <section v-if="featuredPost" class="featured-section" aria-labelledby="featured-title">
     <div class="section-header">
