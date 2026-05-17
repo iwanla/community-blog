@@ -140,19 +140,30 @@ npm install
 npm run build
 ```
 
-Deploy from the repository root:
+Deploy from the frontend directory so Wrangler can detect both `dist/` and `functions/`:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/frontend
+../worker/node_modules/.bin/wrangler pages deploy dist --project-name jelajah-taliabu
+```
+
+Or with `npx` from the same `frontend/` directory:
+
+```bash
+cd /Users/iwanlaudin/Development/community-blog/frontend
+npx wrangler pages deploy dist --project-name jelajah-taliabu
+```
+
+`frontend/functions/posts/[slug].js` injects per-article OpenGraph/Twitter metadata for `/posts/:slug`. Running deploy from `frontend/` keeps the Pages Functions directory in the expected location.
+
+Alternative from the repository root:
 
 ```bash
 cd /Users/iwanlaudin/Development/community-blog
 ./worker/node_modules/.bin/wrangler pages deploy frontend/dist --project-name jelajah-taliabu
 ```
 
-Alternative from `worker/`:
-
-```bash
-cd /Users/iwanlaudin/Development/community-blog/worker
-npx wrangler pages deploy ../frontend/dist --project-name jelajah-taliabu
-```
+Use the alternative only for static-only deploys; it can miss Pages Functions depending on Wrangler/project configuration.
 
 After deploy, verify the frontend:
 
