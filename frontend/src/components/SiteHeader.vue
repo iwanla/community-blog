@@ -60,7 +60,7 @@ watch(() => route.fullPath, () => {
             {{ code.toUpperCase() }}
           </RouterLink>
         </div>
-        <button class="nav-toggle" type="button" :aria-expanded="String(isOpen)" :aria-label="t('nav.menu')" @click="isOpen = !isOpen">
+        <button class="nav-toggle" type="button" :aria-expanded="isOpen" :aria-label="t('nav.menu')" @click="isOpen = !isOpen">
           <span class="nav-toggle-lines" aria-hidden="true"></span>
         </button>
       </div>
@@ -68,7 +68,7 @@ watch(() => route.fullPath, () => {
   </nav>
 
   <div class="mobile-nav-overlay" :hidden="!isOpen" :class="{ 'is-open': isOpen }" @click="isOpen = false"></div>
-  <aside class="mobile-nav-drawer" :class="{ 'is-open': isOpen }" :aria-hidden="String(!isOpen)">
+  <aside class="mobile-nav-drawer" :class="{ 'is-open': isOpen }" :aria-hidden="!isOpen">
     <div class="mobile-nav-head">
       <span class="nav-brand-text">JelajahTaliabu</span>
       <button class="mobile-nav-close" type="button" @click="isOpen = false">

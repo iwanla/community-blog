@@ -29,7 +29,7 @@ function localized(path: string, hash = ""): RouteLocationRaw {
 
       <div class="footer-nav-col">
         <div class="footer-col-title">{{ t("submit.category") }}</div>
-        <button class="footer-accordion-header" type="button" :aria-expanded="String(categoryOpen)" aria-controls="footer-nav-kategori" @click="categoryOpen = !categoryOpen">
+        <button class="footer-accordion-header" type="button" :aria-expanded="categoryOpen" aria-controls="footer-nav-kategori" @click="categoryOpen = !categoryOpen">
           <span class="footer-col-title">{{ t("submit.category") }}</span>
           <svg class="footer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
         </button>
@@ -42,7 +42,7 @@ function localized(path: string, hash = ""): RouteLocationRaw {
 
       <div class="footer-nav-col">
         <div class="footer-col-title">{{ t("footer.platform") }}</div>
-        <button class="footer-accordion-header" type="button" :aria-expanded="String(platformOpen)" aria-controls="footer-nav-platform" @click="platformOpen = !platformOpen">
+        <button class="footer-accordion-header" type="button" :aria-expanded="platformOpen" aria-controls="footer-nav-platform" @click="platformOpen = !platformOpen">
           <span class="footer-col-title">{{ t("footer.platform") }}</span>
           <svg class="footer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
         </button>
