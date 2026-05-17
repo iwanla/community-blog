@@ -56,6 +56,10 @@ export function sanitizeHtml(value = ""): string {
   return output.innerHTML;
 }
 
+function normalizeText(value = ""): string {
+  return value.replace(/\u00a0/g, " ");
+}
+
 export function markdownToHtml(value = ""): string {
   const lines = String(value || "").replace(/\r\n?/g, "\n").split("\n");
   const html = [];
@@ -126,7 +130,7 @@ function looksLikeHtml(value: string) {
 
 function sanitizeNode(node: ChildNode, allowedTags: Set<string>): Node | null {
   if (node.nodeType === Node.TEXT_NODE) {
-    return document.createTextNode(node.textContent || "");
+    return document.createTextNode(normalizeText(node.textContent || ""));
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {

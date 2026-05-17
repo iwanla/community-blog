@@ -1225,6 +1225,7 @@
       font-size: 17px;
       line-height: 1.85;
       color: var(--text-primary);
+      overflow-wrap: anywhere;
     }
 
     .article-body p { margin-bottom: 1.4rem; }
@@ -1914,6 +1915,7 @@
 
 .article-body p {
   margin: 0 0 1em;
+  overflow-wrap: anywhere;
 }
 
 .article-body ul,
