@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { approvePost, deletePost, getPendingPosts, getReviewedPosts, rejectPost } from "../services/api";
-import { contentToPlainText } from "../utils/content";
-import { currentCanonicalUrl, defaultShareImage } from "../i18n/index";
-import { resetArticleMeta, setBaseMeta, setRobots } from "../utils/meta";
-import type { Post } from "../types";
+import { approvePost, deletePost, getPendingPosts, getReviewedPosts, rejectPost } from "./api";
+import { contentToPlainText } from "../../shared/utils/content";
+import { currentCanonicalUrl, defaultShareImage } from "../../shared/i18n/index";
+import { resetArticleMeta, setBaseMeta, setRobots } from "../../shared/utils/meta";
+import type { Post } from "../../shared/types";
 
 const REVIEWED_PAGE_SIZE = 10;
 

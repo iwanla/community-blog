@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { getApprovedPosts, getPostBySlug, reactToPost, trackPostView } from "../services/api";
-import type { ReactionType } from "../services/api";
-import { categoryLabel, currentCanonicalUrl, defaultShareImage, formatDate, getLang, setJsonLd, setMeta, t } from "../i18n/index";
-import { postsOrDummy } from "../utils/dummy-posts";
-import { contentToHtml, contentToPlainText } from "../utils/content";
-import { resetArticleMeta, setBaseMeta, setRobots } from "../utils/meta";
-import type { CategoryStyle, CategoryStyleMap, Post } from "../types";
+import { getApprovedPosts } from "../list/api";
+import { getPostBySlug, reactToPost, trackPostView, type ReactionType } from "./api";
+import { categoryLabel, currentCanonicalUrl, defaultShareImage, formatDate, getLang, setJsonLd, setMeta, t } from "../../../shared/i18n/index";
+import { postsOrDummy } from "../list/dummy-posts";
+import { contentToHtml, contentToPlainText } from "../../../shared/utils/content";
+import { resetArticleMeta, setBaseMeta, setRobots } from "../../../shared/utils/meta";
+import type { CategoryStyle, CategoryStyleMap, Post } from "../../../shared/types";
 
 const route = useRoute();
 const post = ref<Post | null>(null);

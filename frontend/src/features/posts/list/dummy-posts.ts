@@ -1,4 +1,4 @@
-import type { Post } from "../types";
+import type { Post } from "../../../shared/types";
 
 export const DUMMY_POSTS: Post[] = [
   {

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { getApprovedPosts, getFeaturedPost } from "../services/api";
-import { postsOrDummy } from "../utils/dummy-posts";
-import { contentToPlainText } from "../utils/content";
-import { absoluteUrl, categoryLabel, CATEGORIES, currentCanonicalUrl, defaultShareImage, formatDate, getLang, setJsonLd, t } from "../i18n/index";
-import { resetArticleMeta, setBaseMeta, setRobots } from "../utils/meta";
-import type { CategoryStyle, CategoryStyleMap, Post } from "../types";
+import { getApprovedPosts, getFeaturedPost } from "./api";
+import { postsOrDummy } from "./dummy-posts";
+import { contentToPlainText } from "../../../shared/utils/content";
+import { absoluteUrl, categoryLabel, CATEGORIES, currentCanonicalUrl, defaultShareImage, formatDate, getLang, setJsonLd, t } from "../../../shared/i18n/index";
+import { resetArticleMeta, setBaseMeta, setRobots } from "../../../shared/utils/meta";
+import type { CategoryStyle, CategoryStyleMap, Post } from "../../../shared/types";
 
 const route = useRoute();
 const posts = ref<Post[]>([]);

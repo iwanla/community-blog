@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { getCategories, submitArticle } from "../services/api";
-import { categoryLabel, currentCanonicalUrl, currentLang, defaultShareImage, getLocale, t } from "../i18n/index";
-import { sanitizeHtml } from "../utils/content";
-import { resetArticleMeta, setBaseMeta, setRobots } from "../utils/meta";
-import type { Category } from "../types";
+import { getCategories, submitArticle } from "./api";
+import { categoryLabel, currentCanonicalUrl, currentLang, defaultShareImage, getLocale, t } from "../../../shared/i18n/index";
+import { sanitizeHtml } from "../../../shared/utils/content";
+import { resetArticleMeta, setBaseMeta, setRobots } from "../../../shared/utils/meta";
+import type { Category } from "../../../shared/types";
 
 const MAX_COVER_BYTES = 2 * 1024 * 1024;
 const ALLOWED_COVER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
