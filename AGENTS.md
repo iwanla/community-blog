@@ -1,347 +1,80 @@
 # AGENTS.md — JelajahTaliabu
 
----
-
 ## Project Overview
 
-**JelajahTaliabu** adalah platform blog komunitas untuk berbagi cerita, wisata, budaya, kuliner, dan aktivitas seputar Pulau Taliabu. Satu Cloudflare Worker menyajikan API Hono dan hasil build SPA Vue melalui static assets.
+JelajahTaliabu adalah platform blog komunitas untuk berbagi cerita, wisata, budaya, kuliner, dan aktivitas seputar Pulau Taliabu.
 
-- Siapa saja bisa submit artikel + upload cover image
-- Artikel hanya tampil di website **setelah disetujui admin**
-- Admin dinotifikasi via Telegram setiap ada submission baru
-- Fully serverless, semua infrastruktur di Cloudflare ecosystem
-
----
-
-## Tech Stack
-
-| Layer             | Service                  | Fungsi                                        |
-| ----------------- | ------------------------ | --------------------------------------------- |
-| Frontend App      | Vite, Vue 3, Vue Router  | SPA public pages, submit form, admin dashboard |
-| Frontend Language | TypeScript               | Source frontend (`.ts` dan Vue SFC)           |
-| Frontend Hosting  | Cloudflare Worker assets | Hosting static build output                   |
-| Backend API       | Cloudflare Workers       | API submit, list artikel, approve/reject       |
-| Backend Framework | Hono                     | Router ringan untuk Workers                   |
-| Database          | Cloudflare D1            | Simpan artikel, kategori, admin, audit logs   |
-| File Storage      | Cloudflare R2            | Simpan gambar cover artikel                   |
-| Notifications     | Telegram Bot API         | Notifikasi admin saat ada submission baru     |
-| Auth Admin        | Bearer Token             | Proteksi endpoint admin (MVP)                 |
-| Deployment        | Wrangler CLI             | Deploy Workers, binding D1 & R2               |
-
-> **Jangan tambahkan service eksternal** di luar ekosistem Cloudflare tanpa alasan kuat. Stack ini sengaja dijaga di satu ekosistem agar free tier maksimal.
-
----
-
-## Project Structure
-
-```
-jelajah-blog/
-├── wrangler.jsonc          # Production Worker, D1/R2, dan static assets
-├── wrangler.dev.jsonc      # Konfigurasi Worker lokal
-├── migrations/             # Migrasi D1 yang dipakai root Wrangler
-│   ├── 0001_init.sql
-│   └── 0002_reactions.sql
-├── frontend/
-│   ├── index.html          # Vite app shell
-│   ├── package.json        # Vue/Vite scripts
-│   ├── vite.config.ts
-│   ├── tsconfig*.json
-│   ├── public/             # Static assets copied as-is to dist
-│   │   ├── assets/
-│   │   └── vendor/quill/   # Quill vendor bundle for rich text editor
-│   └── src/
-│       ├── main.ts
-│       ├── router.ts       # Vue Router routes + lazy feature views
-│       ├── features/       # Feature views and feature-specific API modules
-│       │   ├── admin/
-│       │   └── posts/
-│       ├── shared/         # Shared API client, components, i18n, types, utils
-│       │   ├── api/client.ts
-│       │   ├── components/
-│       │   ├── i18n/
-│       │   ├── types.ts
-│       │   └── utils/
-│       └── assets/
-│
-├── worker/
-│   ├── src/
-│   │   ├── index.ts        # Entry point Workers, router Hono
-│   │   ├── routes/
-│   │   │   ├── posts.ts    # Public routes: GET posts, POST submit
-│   │   │   └── admin.ts    # Admin routes: approve, reject, delete
-│   │   ├── services/
-│   │   │   ├── post-service.ts     # Logic CRUD artikel ke D1
-│   │   │   ├── r2-service.ts       # Logic upload/delete gambar R2
-│   │   │   └── telegram-service.ts # Kirim notifikasi Telegram
-│   │   └── utils/
-│   │       ├── auth.ts       # Verifikasi Bearer token admin
-│   │       ├── slug.ts       # Generate slug dari title
-│   │       └── validation.ts # Validasi input request
-│   │
-│   └── package.json
-│
-└── docs/
-```
-
----
-
-## Database Schema (Cloudflare D1)
-
-### Tabel `posts`
-
-```sql
-CREATE TABLE posts (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    title           TEXT NOT NULL,
-    slug            TEXT NOT NULL UNIQUE,
-    excerpt         TEXT,
-    content         TEXT NOT NULL,
-    author_name     TEXT NOT NULL,
-    author_email    TEXT,
-    category_id     INTEGER,
-    cover_image_key TEXT,          -- object key di R2
-    status          TEXT NOT NULL DEFAULT 'pending',
-    rejection_reason TEXT,
-    created_at      TEXT NOT NULL,
-    updated_at      TEXT,
-    approved_at     TEXT,
-    approved_by     TEXT
-);
-```
-
-Status yang valid: `pending` · `approved` · `rejected`
-
-### Tabel `categories`
-
-```sql
-CREATE TABLE categories (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    name       TEXT NOT NULL,
-    slug       TEXT NOT NULL UNIQUE,
-    created_at TEXT NOT NULL
-);
-```
-
-### Tabel `audit_logs`
-
-```sql
-CREATE TABLE audit_logs (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    action     TEXT NOT NULL,  -- approve, reject, edit, delete
-    post_id    INTEGER,
-    actor      TEXT,
-    note       TEXT,
-    created_at TEXT NOT NULL
-);
-```
-
----
-
-## R2 Storage Structure
-
-```
-posts/{post_id}/cover-{timestamp}.jpg
-posts/{post_id}/images/{filename}.jpg
-```
-
-Untuk MVP, satu artikel hanya menyimpan satu `cover_image_key` di tabel `posts`.
-
-**Image upload rules:**
-- Max file size: **2MB**
-- Allowed types: `image/jpeg`, `image/png`, `image/webp`
-- Video upload: **dilarang** di MVP
-- Kompres gambar di frontend sebelum upload jika memungkinkan
-
----
-
-## API Reference
-
-**Production Base URL:**
-```
-https://jelajah-blog-api.iwanlaudin01.workers.dev
-```
-
-Frontend memakai URL relatif `/api`; saat development Vite mem-proxy `/api` ke Worker lokal di `http://localhost:8787`. Semua request frontend melewati `frontend/src/shared/api/client.ts`.
-
-### Public Endpoints
-
-#### GET Posts
-```http
-GET /api/posts?page=1&limit=10&category=wisata
-```
-Hanya mengembalikan artikel dengan `status = 'approved'`.
-
-**Response:**
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "title": "Pantai Indah di Taliabu",
-      "slug": "pantai-indah-di-taliabu",
-      "excerpt": "...",
-      "coverImageUrl": "https://cdn.../cover.jpg",
-      "createdAt": "2026-05-15T10:00:00Z"
-    }
-  ],
-  "page": 1,
-  "limit": 10
-}
-```
-
-#### GET Post Detail
-```http
-GET /api/posts/:slug
-```
-Hanya mengembalikan artikel dengan `status = 'approved'`.
-
-#### POST Submit Article
-```http
-POST /api/posts
-Content-Type: multipart/form-data
-```
-
-Fields:
-```
-title, content, excerpt, authorName, authorEmail, categoryId, coverImage
-```
-
-Proses di Worker:
-1. Validasi semua input
-2. Upload `coverImage` ke R2 → simpan object key
-3. Insert artikel ke D1 dengan `status = 'pending'`
-4. Kirim notifikasi Telegram ke admin
-
-### Admin Endpoints
-
-Semua admin endpoint wajib menyertakan header:
-```http
-Authorization: Bearer <ADMIN_TOKEN>
-```
-
-#### GET Pending Posts
-```http
-GET /api/admin/posts/pending
-```
-
-#### Approve Post
-```http
-PATCH /api/admin/posts/:id/approve
-```
-Set: `status = 'approved'`, `approved_at`, `approved_by`
-
-#### Reject Post
-```http
-PATCH /api/admin/posts/:id/reject
-Body: { "reason": "Konten belum lengkap" }
-```
-Set: `status = 'rejected'`, `rejection_reason`
-
-#### Delete Post
-```http
-DELETE /api/admin/posts/:id
-```
-MVP: soft delete dengan `status = 'deleted'`
-
----
-
-## Moderation Flow
-
-```
-User submit artikel + cover image
-        ↓
-Worker: validasi → upload R2 → insert D1 (pending) → notif Telegram
-        ↓
-Admin buka dashboard → review artikel pending
-        ↓
-Approve → status = approved → artikel tampil di publik
-Reject  → status = rejected → artikel tidak tampil
-```
-
----
-
-## Environment Variables & Secrets
-
-Simpan secrets di Cloudflare Worker Secrets, **jangan hardcode** di source code.
-
-| Key                  | Keterangan                         |
-| -------------------- | ---------------------------------- |
-| `ADMIN_TOKEN`        | Bearer token untuk admin endpoints |
-| `TELEGRAM_BOT_TOKEN` | Token Telegram Bot                 |
-| `TELEGRAM_CHAT_ID`   | Chat ID admin Telegram             |
-
-Frontend build-time env:
-
-| Key                 | Keterangan                           |
-| ------------------- | ------------------------------------ |
-| `VITE_TURNSTILE_SITE_KEY` | Public Turnstile site key |
-
-Jangan pernah menyimpan `ADMIN_TOKEN`, token Telegram, atau secret lain di env frontend. API dan static assets disajikan oleh Worker yang sama.
-
-**Cloudflare Bindings** di `wrangler.jsonc`:
-
-```toml
-name = "jelajah-blog"
-main = "worker/src/index.ts"
-compatibility_date = "2026-09-18"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "jelajah_blog"
-database_id = "YOUR_D1_DATABASE_ID"
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "jelajah-blog-assets"
-```
-
----
+- Siapa saja bisa submit artikel dan upload cover image.
+- Artikel hanya tampil setelah disetujui admin.
+- Admin dapat menerima notifikasi submission melalui Telegram.
+- Semua infrastruktur berada di ekosistem Cloudflare.
+- Detail arsitektur ada di `docs/ARCHITECTURE.md`.
 
 ## Development Guidelines
 
-### Struktur & Organisasi
+### Frontend
 
-- Semua request API frontend memakai `frontend/src/shared/api/client.ts`; gunakan feature API module di `frontend/src/features/**/api.ts` untuk endpoint-specific logic.
-- Frontend source memakai TypeScript. File `.vue` gunakan `<script setup lang="ts">`.
-- Route frontend baru dibuat sebagai Vue route di `frontend/src/router.ts`, dengan view di feature yang sesuai, bukan file HTML terpisah.
+- Source frontend menggunakan TypeScript dan Vue SFC dengan `<script setup lang="ts">`.
+- Route frontend baru dibuat di `frontend/src/router.ts` dan view ditempatkan di feature yang sesuai.
+- Request API frontend memakai `frontend/src/shared/api/client.ts`.
+- API spesifik endpoint ditempatkan di `frontend/src/features/**/api.ts`.
+- Gunakan URL relatif `/api`; jangan menambahkan API hostname atau `VITE_API_BASE_URL`.
 - Copy UI dan label kategori dikelola di `frontend/src/shared/i18n/locales/*.json`.
+- Gunakan lazy-loaded route untuk feature views yang tidak diperlukan saat initial load.
+
+### Worker
+
 - Feature Worker baru dibuat di `worker/src/features/` dan didaftarkan di `worker/src/index.ts`.
-- Infrastruktur Worker bersama berada di `worker/src/infrastructure/`; utilitas dan tipe bersama berada di `worker/src/shared/`.
-- Migrasi D1 berada di root `migrations/` agar ditemukan oleh konfigurasi Wrangler root.
+- Infrastruktur lintas feature berada di `worker/src/infrastructure/`.
+- Utilitas dan tipe lintas feature berada di `worker/src/shared/`.
+- Hindari abstraction baru jika hanya dipakai satu feature.
+- Migrasi D1 berada di root `migrations/` agar ditemukan konfigurasi Wrangler root.
+- Root `wrangler.jsonc` adalah konfigurasi deployment production; `wrangler.dev.jsonc` untuk development.
 
-### Data & Logic
+## Data and Logic
 
-- Setiap query publik ke D1 **wajib** `WHERE status = 'approved'` — jangan pernah expose data pending/rejected
-- Pagination wajib di semua endpoint list — default `limit=10`
-- Slug dibuat otomatis dari title via `utils/slug.ts`, tidak boleh diinput manual oleh user
-- Gunakan `audit_logs` untuk semua aksi admin (approve, reject, edit, delete)
+- Setiap query publik ke D1 wajib memakai `WHERE status = 'approved'`.
+- Semua endpoint list wajib memiliki pagination dengan default `limit=10`.
+- Slug dibuat otomatis dari title, bukan diinput manual user.
+- Semua aksi admin approve, reject, edit, dan delete harus menulis `audit_logs`.
 
-### Security
+## Security
 
-- `ADMIN_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` disimpan sebagai Cloudflare Worker Secret — tidak boleh ada di frontend
-- Frontend hanya boleh memakai env publik berprefix `VITE_*`, seperti `VITE_TURNSTILE_SITE_KEY`.
-- Validasi semua input di Worker (`utils/validation.ts`) — jangan andalkan validasi frontend saja
-- Batasi tipe file upload: `jpeg`, `png`, `webp` — tolak tipe lain di Worker
-- Batasi ukuran file upload maksimal **2MB** di Worker
-- Terapkan rate limiting sederhana di Worker untuk endpoint submit
-- Admin token diverifikasi di setiap request via `utils/auth.ts`
+- `ADMIN_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, dan `TURNSTILE_SECRET_KEY` hanya disimpan sebagai Worker secrets.
+- Frontend hanya memakai env publik seperti `VITE_TURNSTILE_SITE_KEY`.
+- Validasi input wajib dilakukan di Worker, bukan hanya di frontend.
+- Upload hanya menerima `image/jpeg`, `image/png`, dan `image/webp`.
+- Ukuran upload cover maksimal 2 MB.
+- Submit memakai rate limiting sederhana di Worker.
+- Admin token diverifikasi pada setiap request admin.
 
-### SEO
+## SEO
 
-- Setiap halaman artikel wajib punya `<title>`, `<meta description>`, OpenGraph tags, canonical URL, dan JSON-LD. Metadata di-update lewat helper frontend route/view.
-- URL struktur: `/posts/:slug`
+- Setiap halaman artikel wajib memiliki title, meta description, OpenGraph tags, canonical URL, dan JSON-LD.
+- URL artikel menggunakan `/posts/:slug`.
 - `robots.txt` dan `sitemap.xml` berada di `frontend/public/`.
 
----
+## Environment
 
-## Categories
+Frontend:
 
+```env
+VITE_TURNSTILE_SITE_KEY=...
 ```
-Wisata · Budaya · Kuliner · Sejarah · Berita Lokal · Cerita Warga · UMKM · Politik
-```
 
----
+Worker local secrets berada di `worker/.dev.vars`; gunakan `worker/.dev.vars.example` sebagai template. Jangan commit secret.
+
+## Verification
+
+Gunakan perintah dari root project:
+
+```bash
+npm run typecheck
+npm run build
+npm run db:migrate:local
+```
 
 ## File Conventions
 
-- `plan.md` dan semua dokumen perencanaan disimpan di `.codex/plans/`
+- Dokumen perencanaan disimpan di `docs/plans/`.
+- Dokumentasi arsitektur utama disimpan di `docs/ARCHITECTURE.md`.

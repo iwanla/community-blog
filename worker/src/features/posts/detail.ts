@@ -21,5 +21,5 @@ postDetail.get("/:slug", async (c) => {
     return c.json({ error: "Post not found" }, 404);
   }
 
-  return c.json({ data: toPublicPost(c.env, row, true) });
+  return c.json({ data: toPublicPost(row, true) });
 });

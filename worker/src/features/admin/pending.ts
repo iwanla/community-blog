@@ -16,5 +16,5 @@ pendingPosts.get("/posts/pending", async (c) => {
     `,
   ).all<PostRow>();
 
-  return c.json({ data: rows.results.map((row) => toAdminPost(c.env, row)) });
+  return c.json({ data: rows.results.map((row) => toAdminPost(row)) });
 });

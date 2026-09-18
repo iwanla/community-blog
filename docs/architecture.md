@@ -1,85 +1,152 @@
 # Architecture
 
-JelajahTaliabu is a serverless community blog for stories, tourism, culture, food, local news, and citizen submissions from Taliabu Island.
+JelajahTaliabu adalah blog komunitas serverless untuk cerita, wisata, budaya, kuliner, berita lokal, dan submission warga Pulau Taliabu.
 
-## System Overview
+## Overview
+
+- Vue 3, Vite, dan Vue Router untuk frontend.
+- Cloudflare Worker dan Hono untuk backend API.
+- Cloudflare D1 untuk data artikel, kategori, moderasi, dan engagement.
+- Cloudflare R2 untuk cover image.
+- Satu deployment Worker menyajikan API dan hasil build SPA.
+- Backend menggunakan vertical slice berdasarkan use case.
 
 ```text
 Browser
   |
-  | static Vite/Vue/TypeScript bundle
+  | same-origin /api/* dan route SPA
   v
-Cloudflare Pages
-  |
-  | fetch() from frontend/src/services/api.ts
-  v
-Cloudflare Worker API (Hono)
-  |
-  +--> Cloudflare D1: posts, categories, audit_logs, reactions, view_logs
-  |
-  +--> Cloudflare R2: cover images
-  |
-  +--> Cloudflare Turnstile: submission anti-abuse verification
-  |
-  +--> Telegram Bot API: admin submission notifications
+Cloudflare Worker
+  |-- Hono API (/api/*)
+  |     |-- D1
+  |     |-- R2
+  |     |-- Turnstile
+  |     `-- Telegram Bot API
+  `-- Static Assets (frontend/dist)
 ```
 
-The frontend is static. All API calls from the frontend must go through `frontend/src/services/api.ts`.
+Frontend dan backend tetap dipisahkan secara source code, tetapi di-host sebagai satu aplikasi Cloudflare Worker. Frontend memakai URL relatif seperti `fetch("/api/posts")`; saat development Vite mem-proxy `/api` ke Worker lokal pada `http://localhost:8787`.
 
-## Frontend
+## Project Structure
 
-The frontend lives in `frontend/` and is deployed to Cloudflare Pages as a static Vue SPA.
-
-Runtime stack:
-
-- Vite
-- Vue 3
-- Vue Router
-- TypeScript
-- Quill loaded from `frontend/public/vendor/quill/` for the rich-text submit editor.
-
-Routes:
-
-- `/`: homepage, featured article, approved article list, search, and category filters.
-- `/posts/:slug`: article detail route with view tracking and reactions.
-- `/submit`: community submission form with cover upload, rich-text content, and Turnstile verification.
-- `/admin`: moderation dashboard for pending and reviewed submissions.
-
-Main frontend modules:
-
-- `frontend/src/services/api.ts`: the only place where `fetch()` calls are made.
-- `frontend/src/router.ts`: Vue Router route definitions and language query synchronization.
-- `frontend/src/i18n/index.ts`: translation helpers, category labels, locale state, metadata helpers.
-- `frontend/src/i18n/locales/*.json`: Indonesian and English UI text and category labels.
-- `frontend/src/views/*.vue`: page-level route views.
-- `frontend/src/components/*.vue`: shared header and footer.
-- `frontend/src/utils/*.ts`: content sanitizing, dummy fallback posts, and metadata helpers.
-
-The frontend uses client-side metadata updates. Static metadata exists in `frontend/index.html`, then route views update title, description, OpenGraph, Twitter, canonical, and JSON-LD after route data is available.
-
-Frontend build-time environment:
-
-```env
-VITE_API_BASE_URL=https://jelajah-blog-api.iwanlaudin01.workers.dev
+```text
+jelajah-blog/
+├── wrangler.jsonc
+├── wrangler.dev.jsonc
+├── package.json
+├── migrations/
+│   ├── 0001_init.sql
+│   └── 0002_reactions.sql
+├── frontend/
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── public/
+│   │   ├── assets/
+│   │   └── vendor/quill/
+│   └── src/
+│       ├── main.ts
+│       ├── router.ts
+│       ├── features/
+│       │   ├── admin/
+│       │   └── posts/
+│       │       ├── list/
+│       │       ├── detail/
+│       │       └── submit/
+│       ├── shared/
+│       │   ├── api/client.ts
+│       │   ├── components/
+│       │   ├── i18n/
+│       │   ├── types.ts
+│       │   └── utils/
+│       └── assets/
+├── worker/
+│   ├── package.json
+│   └── src/
+│       ├── index.ts
+│       ├── features/
+│       │   ├── admin/
+│       │   ├── categories/
+│       │   └── posts/
+│       ├── infrastructure/
+│       └── shared/
+└── docs/
 ```
 
-`VITE_API_BASE_URL` is public and embedded into the browser bundle by Vite. It must only contain the public Worker API base URL. Admin and Telegram tokens must never be stored in frontend env variables.
+## Frontend Organization
 
-## Worker API
+Frontend menggunakan feature-based organization.
 
-The API lives in `worker/` and is deployed as a Cloudflare Worker.
+- `features/posts/list/`: homepage, list API, dan fallback posts.
+- `features/posts/detail/`: article detail dan detail API.
+- `features/posts/submit/`: submission form dan submit API.
+- `features/admin/`: moderation dashboard dan admin API.
+- `shared/api/client.ts`: HTTP client umum untuk error handling dan JSON response.
+- `shared/components/`: header dan footer.
+- `shared/i18n/`: translation helpers dan locale files.
+- `shared/utils/`: content sanitizing dan metadata helpers.
+- `router.ts`: route definitions dan lazy-loaded feature views.
 
-Entry point:
+API spesifik tetap dekat dengan feature yang menggunakannya. Tidak ada production API hostname di frontend.
 
-- `worker/src/index.ts`
+## Worker Organization
 
-Routes:
+Backend menggunakan vertical slices. Setiap feature menangani satu use case atau kelompok endpoint yang terkait.
 
-- `GET /`: health check.
-- `GET /assets/*`: serves R2 objects through the Worker with long-lived cache headers.
-- `/api/posts`: public post routes.
-- `/api/categories`: public category routes.
-- `/api/admin`: admin moderation routes.
+- `features/posts/`: list, detail, submit, view, dan react.
+- `features/admin/`: pending, reviewed, approve, reject, dan delete.
+- `features/categories/`: public category list.
+- `infrastructure/`: adapter untuk D1, R2, Telegram, dan Turnstile.
+- `shared/`: auth, validation, rate limiting, fingerprint, slug, dan shared types.
+- `index.ts`: composition root, middleware, route registration, static asset entry, dan error handling.
+
+Feature-specific logic tetap di feature. Code dipindahkan ke `shared/` atau `infrastructure/` hanya jika dipakai lintas feature.
+
+## Deployment
+
+`wrangler.jsonc` berada di root karena merepresentasikan seluruh deployment aplikasi.
+
+```jsonc
+{
+  "name": "jelajah-blog",
+  "main": "worker/src/index.ts",
+  "assets": {
+    "directory": "frontend/dist",
+  },
+  "d1_databases": [{ "binding": "DB" }],
+  "r2_buckets": [{ "binding": "BUCKET" }]
+}
+```
+
+Routing utama:
+
+```text
+/api/*      -> Worker Hono
+/assets/*   -> Worker R2 asset handler
+/           -> frontend/dist/index.html
+/posts/*    -> frontend/dist/index.html -> Vue Router
+/admin/*    -> frontend/dist/index.html -> Vue Router
+/submit     -> frontend/dist/index.html -> Vue Router
+```
+
+`run_worker_first` memastikan `/api/*` diproses Worker sebelum static asset fallback. `not_found_handling: "single-page-application"` memastikan route Vue tetap mengarah ke `index.html`.
+
+Deployment dijalankan dari root:
+
+```bash
+npm run deploy
+```
+
+Flow deployment:
+
+```text
+npm run deploy
+  -> build frontend
+  -> frontend/dist
+  -> wrangler deploy
+  -> Worker + Static Assets
+```
+
+## API Surface
 
 Public endpoints:
 
@@ -91,6 +158,19 @@ Public endpoints:
 - `GET /api/categories`
 - `POST /api/posts`
 
+Response tambahan untuk `GET /api/posts` dan `GET /api/posts/:slug`:
+
+```json
+{
+  "views": 12,
+  "likes": 8,
+  "dislikes": 1
+}
+```
+
+`POST /api/posts/:slug/view` mengembalikan `{ "counted": boolean, "views": number }`.
+`POST /api/posts/:slug/react` menerima body `{ "type": "like" | "dislike" | "none" }` dan mengembalikan `{ "ok": true, "likes": number, "dislikes": number }`.
+
 Admin endpoints:
 
 - `GET /api/admin/posts/pending`
@@ -99,171 +179,129 @@ Admin endpoints:
 - `PATCH /api/admin/posts/:id/reject`
 - `DELETE /api/admin/posts/:id`
 
-Admin endpoints require:
+Admin endpoints memerlukan:
 
 ```http
 Authorization: Bearer <ADMIN_TOKEN>
 ```
 
+Semua query publik hanya mengembalikan post dengan `status = 'approved'`. Endpoint list menggunakan pagination dengan default `limit=10`.
+
 ## Data Flow
 
 ### Public Reading
 
-1. Browser loads static frontend from Cloudflare Pages.
-2. Frontend calls `GET /api/posts` or `GET /api/posts/:slug`.
-3. Worker queries D1 through the post service.
-4. Public queries only return posts where `status = 'approved'`.
-5. Cover image URLs are built from `ASSET_PUBLIC_BASE_URL` and `cover_image_key`.
-
-### Featured Article
-
-1. Homepage calls `GET /api/posts/featured`.
-2. Worker selects one approved post using:
-
-```sql
-ORDER BY (COALESCE(views, 0) + COALESCE(likes, 0) * 5) DESC,
-         approved_at DESC,
-         created_at DESC
-LIMIT 1
-```
-
-3. The frontend renders the returned post in the featured article section.
+1. Browser memuat SPA dari static assets Worker.
+2. Frontend memanggil `/api/posts` atau `/api/posts/:slug` pada origin yang sama.
+3. Worker membaca D1 dan hanya mengembalikan post approved.
+4. Cover image dilayani melalui `/assets/{object_key}` dari R2.
 
 ### Article Engagement
 
-1. Article detail calls `POST /api/posts/:slug/view` after loading an approved post.
-2. Worker fingerprints the request and records one view per `(post_id, fingerprint)` in `view_logs`.
-3. Worker increments the denormalized `posts.views` counter only for newly inserted view logs.
-4. Reader reactions call `POST /api/posts/:slug/react` with `type` set to `like`, `dislike`, or `none`.
-5. Worker stores one reaction per `(post_id, fingerprint)` in `reactions`, then recalculates `posts.likes` and `posts.dislikes`.
+1. Article detail mengirim `POST /api/posts/:slug/view` setelah post approved dimuat.
+2. Worker membuat fingerprint anonim dari IP request dan User-Agent menggunakan SHA-256, tanpa menyimpan IP mentah.
+3. Worker mencatat satu view per kombinasi post dan fingerprint di `view_logs`.
+4. Reaction dikirim ke `POST /api/posts/:slug/react` dengan `like`, `dislike`, atau `none`.
+5. Worker menyimpan atau menghapus reaction unik di D1 dan menghitung ulang counter `posts.likes` serta `posts.dislikes`.
 
-```text
-ArticleView.vue
-  |
-  | POST /api/posts/:slug/view
-  v
-Worker reaction-service
-  |
-  | fingerprint request
-  v
-D1 view_logs
-  |
-  | insert only if (post_id, fingerprint) is new
-  v
-posts.views + 1
-
-
-ArticleView.vue
-  |
-  | POST /api/posts/:slug/react
-  | body: { type: "like" | "dislike" | "none" }
-  v
-Worker reaction-service
-  |
-  | fingerprint request
-  v
-D1 reactions
-  |
-  | upsert like/dislike or delete when type = none
-  v
-Recalculate posts.likes / posts.dislikes
-```
-
-`view_logs` and `reactions` are used for duplicate protection and per-reader state. The denormalized counters on `posts` are used for fast reads in article detail, public lists, and featured article scoring.
+View dan reaction tidak memerlukan authentication. Fingerprint hanya digunakan untuk deduplikasi anonim pada skala MVP. `none` menghapus reaction aktif; view tidak dapat dibatalkan.
 
 ### Article Submission
 
-1. User opens `/submit`, fills the Vue form, writes content in Quill, and uploads a cover image.
-2. `SubmitView.vue` validates required fields, content length, image type, and image size.
-3. User must complete Cloudflare Turnstile.
-4. Frontend sends `multipart/form-data` to `POST /api/posts`, including the Turnstile response token.
-5. Worker verifies the Turnstile token with Cloudflare.
-6. Worker validates the request again.
-7. Worker inserts a D1 row with `status = 'pending'`.
-8. Worker uploads the cover image to R2 under `posts/{post_id}/cover-{timestamp}.{ext}`.
-9. Worker updates `cover_image_key` in D1.
-10. Worker sends a Telegram notification when Telegram secrets are configured.
+1. User mengisi form `/submit`, konten rich text, cover image, dan Turnstile.
+2. Frontend mengirim `multipart/form-data` ke `POST /api/posts`.
+3. Worker memverifikasi Turnstile dan memvalidasi ulang input.
+4. Worker membuat post `pending`, mengunggah cover ke R2, lalu menyimpan object key di D1.
+5. Worker mengirim notifikasi Telegram jika secret Telegram tersedia.
 
 ### Moderation
 
-1. Admin opens `/admin` and enters `ADMIN_TOKEN`.
-2. Frontend calls `GET /api/admin/posts/pending`.
-3. Admin approves, rejects, or deletes a post.
-4. Worker updates D1 status and writes an `audit_logs` row.
-5. Approved posts become visible through public endpoints.
+1. Admin membuka `/admin` dan memasukkan `ADMIN_TOKEN`.
+2. Frontend memuat pending atau reviewed submissions.
+3. Worker memproses approve, reject, atau delete dan menulis `audit_logs`.
+4. Post approved menjadi terlihat melalui endpoint publik.
 
 ## Data Model
 
-D1 tables are defined in `worker/migrations/`.
+Migrasi D1 berada di root `migrations/` dan digunakan oleh konfigurasi Wrangler root.
 
-Core tables:
+- `posts`: artikel, author, kategori, cover key, status moderasi, dan engagement counters.
+- `categories`: nama dan slug kategori.
+- `audit_logs`: riwayat aksi admin.
+- `reactions`: satu like/dislike per post dan fingerprint.
+- `view_logs`: satu view tercatat per post dan fingerprint.
 
-- `posts`: article content, author info, location, category, cover key, status, moderation fields, and denormalized engagement counters.
-- `categories`: seeded categories and slugs.
-- `audit_logs`: admin moderation history.
-- `reactions`: one like/dislike reaction per post fingerprint.
-- `view_logs`: one counted view per post fingerprint.
+Migration `0002_reactions.sql` menambahkan kolom `views`, `likes`, dan `dislikes` ke `posts`, lalu membuat tabel `reactions` dan `view_logs` beserta unique constraint dan index lookup.
 
-`posts` engagement columns:
-
-```text
-views
-likes
-dislikes
-```
-
-Valid public article state:
+Status post:
 
 ```text
-status = 'approved'
+pending -> approved
+pending -> rejected
+pending/approved/rejected -> deleted
 ```
 
-Moderation states:
+## Environment and Security
 
-```text
-pending
-approved
-rejected
-deleted
-```
+Worker secrets tidak boleh disimpan di source code atau frontend:
+
+- `ADMIN_TOKEN`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `TURNSTILE_SECRET_KEY`
+
+Public frontend env:
+
+- `VITE_TURNSTILE_SITE_KEY`
+
+Frontend env tidak menyimpan API base URL karena API dan asset menggunakan same-origin deployment.
+
+Validasi dan batas keamanan:
+
+- Admin token diverifikasi pada setiap admin request.
+- Submit divalidasi di frontend dan Worker.
+- Cover hanya menerima JPEG, PNG, dan WebP.
+- Ukuran cover maksimal 2 MB.
+- Submit memiliki rate limiting sederhana di Worker.
+- View dan reaction saat ini mengandalkan deduplikasi D1; belum menggunakan binding rate limiter atau KV.
+- Query publik wajib memfilter `status = 'approved'`.
+
+## Planned Phase 2: KV Rate Limiting
+
+`docs/backend-reactions-phase-2-implementation-plan.md` mendefinisikan peningkatan rate limiting yang belum diaktifkan pada konfigurasi saat ini.
+
+Rencana tersebut akan:
+
+- Menambahkan binding KV `RATE_LIMIT_KV` di `wrangler.jsonc` dan `wrangler.dev.jsonc`.
+- Mengganti `Map` in-memory pada submit limiter dengan fixed-window KV limiter.
+- Menggunakan key `rl:{scope}:{ip}` dengan fallback IP `unknown`.
+- Mempertahankan deduplikasi view/reaction di D1 sebagai source of truth.
+- Mengembalikan HTTP `429` dengan body `{ "error": "Too many requests. Please try again later." }` saat limit terlampaui.
+
+Limit yang direncanakan:
+
+| Endpoint | Limit | Window |
+| --- | ---: | --- |
+| `POST /api/posts` | 5 request | 60 detik |
+| `POST /api/posts/:slug/view` | 30 request | 60 detik |
+| `POST /api/posts/:slug/react` | 10 request | 60 detik |
+
+Binding KV tidak boleh didokumentasikan sebagai aktif sampai konfigurasi Wrangler, `Bindings`, limiter, dan test lokal sudah diperbarui bersama.
 
 ## Storage
 
-Cover images are stored in R2 through the `BUCKET` binding.
-
-Current cover object format:
+Cover image disimpan di R2 dengan format:
 
 ```text
 posts/{post_id}/cover-{timestamp}.{jpg|png|webp}
 ```
 
-Images are served through the Worker:
+Worker melayani object melalui:
 
 ```text
 /assets/{object_key}
 ```
 
-The public image URL is generated only when `ASSET_PUBLIC_BASE_URL` is configured.
+## SEO
 
-## Security Boundaries
-
-- Secrets are Cloudflare Worker secrets, not frontend values.
-- Frontend `VITE_*` values are public browser bundle values.
-- `ADMIN_TOKEN` protects all admin endpoints.
-- `TURNSTILE_SECRET_KEY` is required for public article submission.
-- The admin token is entered manually in `/admin`, stored in `sessionStorage`, and sent as `Authorization: Bearer <ADMIN_TOKEN>`.
-- Public D1 queries must filter by `status = 'approved'`.
-- Server-side validation is required even when frontend validation exists.
-- Cover upload accepts only JPEG, PNG, and WebP.
-- Cover upload max size is 2 MB.
-- Submit endpoint has simple Worker-side rate limiting.
-- View and reaction endpoints use request fingerprints for basic duplicate protection.
-
-## Deployment Units
-
-- Frontend: Cloudflare Pages project `jelajah-taliabu`.
-- API: Cloudflare Worker `jelajah-blog-api`.
-- Database: Cloudflare D1 database `jelajah_blog`.
-- Storage: Cloudflare R2 bucket `jelajah-blog-assets`.
-
-See `docs/deployment.md` for commands and post-deploy checks.
+Route artikel `/posts/:slug` memperbarui title, meta description, OpenGraph, canonical URL, dan JSON-LD melalui shared metadata helper setelah data artikel tersedia.

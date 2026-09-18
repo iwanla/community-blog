@@ -22,5 +22,5 @@ reviewedPosts.get("/posts/reviewed", async (c) => {
     .bind(limit, offset)
     .all<PostRow>();
 
-  return c.json({ data: rows.results.map((row) => toAdminPost(c.env, row)), page, limit });
+  return c.json({ data: rows.results.map((row) => toAdminPost(row)), page, limit });
 });

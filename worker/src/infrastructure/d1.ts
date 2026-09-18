@@ -29,7 +29,7 @@ export async function audit(env: Bindings, action: string, postId: number, actor
     .run();
 }
 
-export function toPublicPost(env: Bindings, row: PostRow, includeContent = false) {
+export function toPublicPost(row: PostRow, includeContent = false) {
   return {
     id: row.id,
     title: row.title,
@@ -40,7 +40,7 @@ export function toPublicPost(env: Bindings, row: PostRow, includeContent = false
     category: row.category_name,
     categorySlug: row.category_slug,
     location: row.location,
-    coverImageUrl: publicImageUrl(env, row.cover_image_key),
+    coverImageUrl: publicImageUrl(row.cover_image_key),
     views: row.views || 0,
     likes: row.likes || 0,
     dislikes: row.dislikes || 0,
@@ -50,9 +50,9 @@ export function toPublicPost(env: Bindings, row: PostRow, includeContent = false
   };
 }
 
-export function toAdminPost(env: Bindings, row: PostRow) {
+export function toAdminPost(row: PostRow) {
   return {
-    ...toPublicPost(env, row, true),
+    ...toPublicPost(row, true),
     status: row.status,
     authorEmail: row.author_email,
     rejectionReason: row.rejection_reason,

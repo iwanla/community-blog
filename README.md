@@ -95,7 +95,6 @@ Create `worker/.dev.vars`:
 
 ```env
 ADMIN_TOKEN=local-admin-token
-ASSET_PUBLIC_BASE_URL=http://localhost:8787/assets
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 
 # Optional: only needed when testing real Telegram notifications.
@@ -388,7 +387,6 @@ Use `worker/.dev.vars`:
 
 ```env
 ADMIN_TOKEN=local-admin-token
-ASSET_PUBLIC_BASE_URL=http://localhost:8787/assets
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 ```
 
@@ -420,8 +418,6 @@ npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_CHAT_ID
 ```
 
-Non-secret values such as `ASSET_PUBLIC_BASE_URL` can be configured in `wrangler.toml` under `[vars]`.
-
 For Cloudflare Pages, configure the frontend environment variable:
 
 ```env
@@ -449,8 +445,7 @@ bucket_name = "jelajah-blog-assets"
 ```
 
 4. Configure production secrets.
-5. Configure `ASSET_PUBLIC_BASE_URL`.
-6. Apply remote migrations:
+5. Apply remote migrations:
 
 ```bash
 cd worker
@@ -518,7 +513,6 @@ The project is close to deployment, but verify these items before production:
 
 - `VITE_API_BASE_URL` must point to the deployed Worker API in production.
 - `worker/wrangler.toml` must use the real Cloudflare D1 `database_id`.
-- `ASSET_PUBLIC_BASE_URL` must be configured for production image URLs.
 - Production Cloudflare secrets must be set.
 - `VITE_TURNSTILE_SITE_KEY` must be configured in Cloudflare Pages.
 - Remote D1 migrations must be applied.

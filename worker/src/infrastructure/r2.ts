@@ -25,10 +25,6 @@ export async function deleteObject(env: Bindings, key: string | null) {
   }
 }
 
-export function publicImageUrl(env: Bindings, key: string | null): string | null {
-  if (!key || !env.ASSET_PUBLIC_BASE_URL) {
-    return null;
-  }
-
-  return `${env.ASSET_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`;
+export function publicImageUrl(key: string | null): string | null {
+  return key ? `/assets/${key}` : null;
 }

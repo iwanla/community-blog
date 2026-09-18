@@ -5,7 +5,6 @@ export type Bindings = {
   TURNSTILE_SECRET_KEY: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
-  ASSET_PUBLIC_BASE_URL?: string;
 };
 
 export type CategoryRow = {

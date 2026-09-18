@@ -25,7 +25,7 @@ listPosts.get("/", async (c) => {
     .bind(...params)
     .all<PostRow>();
 
-  return c.json({ data: rows.results.map((row) => toPublicPost(c.env, row)), page, limit });
+  return c.json({ data: rows.results.map((row) => toPublicPost(row)), page, limit });
 });
 
 listPosts.get("/featured", async (c) => {
@@ -40,5 +40,5 @@ listPosts.get("/featured", async (c) => {
     `,
   ).first<PostRow>();
 
-  return c.json({ data: row ? toPublicPost(c.env, row) : null });
+  return c.json({ data: row ? toPublicPost(row) : null });
 });
