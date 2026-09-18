@@ -1,4 +1,4 @@
-import type { Bindings } from "../types";
+import type { Bindings } from "../shared/types";
 
 const EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",

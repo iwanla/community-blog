@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import type { Bindings } from "../types";
+import type { Bindings } from "./types";
 
 export async function requireAdmin(c: Context<{ Bindings: Bindings }>, next: Next) {
   const header = c.req.header("Authorization") || "";

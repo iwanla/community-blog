@@ -1,4 +1,4 @@
-import type { Bindings, PostRow } from "../types";
+import type { Bindings, PostRow } from "../shared/types";
 
 export async function notifyNewSubmission(env: Bindings, post: Pick<PostRow, "id" | "title" | "author_name">) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {

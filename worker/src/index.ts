@@ -1,9 +1,18 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { adminRoutes } from "./routes/admin";
-import { categoryRoutes } from "./routes/categories";
-import { postRoutes } from "./routes/posts";
-import type { Bindings } from "./types";
+import { approvePost } from "./features/admin/approve";
+import { deletePost } from "./features/admin/delete";
+import { pendingPosts } from "./features/admin/pending";
+import { rejectPost } from "./features/admin/reject";
+import { reviewedPosts } from "./features/admin/reviewed";
+import { listCategories } from "./features/categories/list";
+import { postDetail } from "./features/posts/detail";
+import { listPosts } from "./features/posts/list";
+import { reactToPost } from "./features/posts/react";
+import { submitPost } from "./features/posts/submit";
+import { viewPost } from "./features/posts/view";
+import { requireAdmin } from "./shared/auth";
+import type { Bindings } from "./shared/types";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -37,9 +46,19 @@ app.get("/assets/*", async (c) => {
   return new Response(object.body, { headers });
 });
 
-app.route("/api/posts", postRoutes);
-app.route("/api/categories", categoryRoutes);
-app.route("/api/admin", adminRoutes);
+app.route("/api/posts", listPosts);
+app.route("/api/posts", postDetail);
+app.route("/api/posts", submitPost);
+app.route("/api/posts", viewPost);
+app.route("/api/posts", reactToPost);
+app.route("/api/categories", listCategories);
+
+app.use("/api/admin/*", requireAdmin);
+app.route("/api/admin", pendingPosts);
+app.route("/api/admin", reviewedPosts);
+app.route("/api/admin", approvePost);
+app.route("/api/admin", rejectPost);
+app.route("/api/admin", deletePost);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 

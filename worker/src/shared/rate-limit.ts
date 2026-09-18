@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import type { Bindings } from "../types";
+import type { Bindings } from "./types";
 
 const WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS = 5;

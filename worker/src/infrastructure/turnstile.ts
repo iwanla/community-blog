@@ -1,4 +1,4 @@
-import type { Bindings } from "../types";
+import type { Bindings } from "../shared/types";
 
 const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const VERIFY_TIMEOUT_MS = 5000;
