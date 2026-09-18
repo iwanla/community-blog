@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**JelajahTaliabu** adalah platform blog komunitas untuk berbagi cerita, wisata, budaya, kuliner, dan aktivitas seputar Pulau Taliabu.
+**JelajahTaliabu** adalah platform blog komunitas untuk berbagi cerita, wisata, budaya, kuliner, dan aktivitas seputar Pulau Taliabu. Satu Cloudflare Worker menyajikan API Hono dan hasil build SPA Vue melalui static assets.
 
 - Siapa saja bisa submit artikel + upload cover image
 - Artikel hanya tampil di website **setelah disetujui admin**
@@ -19,7 +19,7 @@
 | ----------------- | ------------------------ | --------------------------------------------- |
 | Frontend App      | Vite, Vue 3, Vue Router  | SPA public pages, submit form, admin dashboard |
 | Frontend Language | TypeScript               | Source frontend (`.ts` dan Vue SFC)           |
-| Frontend Hosting  | Cloudflare Pages         | Hosting static build output                   |
+| Frontend Hosting  | Cloudflare Worker assets | Hosting static build output                   |
 | Backend API       | Cloudflare Workers       | API submit, list artikel, approve/reject       |
 | Backend Framework | Hono                     | Router ringan untuk Workers                   |
 | Database          | Cloudflare D1            | Simpan artikel, kategori, admin, audit logs   |
@@ -36,6 +36,11 @@
 
 ```
 jelajah-blog/
+├── wrangler.jsonc          # Production Worker, D1/R2, dan static assets
+├── wrangler.dev.jsonc      # Konfigurasi Worker lokal
+├── migrations/             # Migrasi D1 yang dipakai root Wrangler
+│   ├── 0001_init.sql
+│   └── 0002_reactions.sql
 ├── frontend/
 │   ├── index.html          # Vite app shell
 │   ├── package.json        # Vue/Vite scripts
@@ -46,18 +51,16 @@ jelajah-blog/
 │   │   └── vendor/quill/   # Quill vendor bundle for rich text editor
 │   └── src/
 │       ├── main.ts
-│       ├── router.ts       # Vue Router routes + lang sync
-│       ├── types.ts        # Shared frontend types
-│       ├── services/
-│       │   └── api.ts      # Semua fetch() ke Workers API — satu-satunya tempat
-│       ├── i18n/
-│       │   ├── index.ts
-│       │   └── locales/
-│       │       ├── id.json
-│       │       └── en.json
-│       ├── views/          # HomeView, ArticleView, SubmitView, AdminView
-│       ├── components/     # SiteHeader, SiteFooter
-│       ├── utils/
+│       ├── router.ts       # Vue Router routes + lazy feature views
+│       ├── features/       # Feature views and feature-specific API modules
+│       │   ├── admin/
+│       │   └── posts/
+│       ├── shared/         # Shared API client, components, i18n, types, utils
+│       │   ├── api/client.ts
+│       │   ├── components/
+│       │   ├── i18n/
+│       │   ├── types.ts
+│       │   └── utils/
 │       └── assets/
 │
 ├── worker/
@@ -75,10 +78,6 @@ jelajah-blog/
 │   │       ├── slug.ts       # Generate slug dari title
 │   │       └── validation.ts # Validasi input request
 │   │
-│   ├── migrations/
-│   │   └── 0001_init.sql   # Schema awal D1
-│   │
-│   ├── wrangler.toml
 │   └── package.json
 │
 └── docs/
@@ -162,7 +161,7 @@ Untuk MVP, satu artikel hanya menyimpan satu `cover_image_key` di tabel `posts`.
 https://jelajah-blog-api.iwanlaudin01.workers.dev
 ```
 
-Frontend membaca API base URL dari `VITE_API_BASE_URL` saat build. Semua `fetch()` ke API **hanya boleh** ada di `frontend/src/services/api.ts`.
+Frontend memakai URL relatif `/api`; saat development Vite mem-proxy `/api` ke Worker lokal di `http://localhost:8787`. Semua request frontend melewati `frontend/src/shared/api/client.ts`.
 
 ### Public Endpoints
 
@@ -275,16 +274,16 @@ Frontend build-time env:
 
 | Key                 | Keterangan                           |
 | ------------------- | ------------------------------------ |
-| `VITE_API_BASE_URL` | Public Worker API base URL untuk Vite |
+| `VITE_TURNSTILE_SITE_KEY` | Public Turnstile site key |
 
-`VITE_API_BASE_URL` adalah nilai publik yang masuk ke browser bundle. Jangan pernah menyimpan `ADMIN_TOKEN`, token Telegram, atau secret lain di env frontend.
+Jangan pernah menyimpan `ADMIN_TOKEN`, token Telegram, atau secret lain di env frontend. API dan static assets disajikan oleh Worker yang sama.
 
-**Cloudflare Bindings** di `wrangler.toml`:
+**Cloudflare Bindings** di `wrangler.jsonc`:
 
 ```toml
-name = "jelajah-blog-api"
-main = "src/index.ts"
-compatibility_date = "2026-05-15"
+name = "jelajah-blog"
+main = "worker/src/index.ts"
+compatibility_date = "2026-09-18"
 
 [[d1_databases]]
 binding = "DB"
@@ -302,12 +301,13 @@ bucket_name = "jelajah-blog-assets"
 
 ### Struktur & Organisasi
 
-- Semua `fetch()` ke Workers API **hanya boleh** ada di `frontend/src/services/api.ts`
+- Semua request API frontend memakai `frontend/src/shared/api/client.ts`; gunakan feature API module di `frontend/src/features/**/api.ts` untuk endpoint-specific logic.
 - Frontend source memakai TypeScript. File `.vue` gunakan `<script setup lang="ts">`.
-- Route frontend baru dibuat sebagai Vue route di `frontend/src/router.ts` dan view di `frontend/src/views/`, bukan file HTML terpisah.
-- Copy UI dan label kategori dikelola di JSON locale `frontend/src/i18n/locales/*.json`; canonical kategori tetap di konstanta domain.
-- Route baru di Worker didaftarkan di `src/index.ts`, logic di `src/routes/`
-- Gunakan service layer (`src/services/`) untuk semua operasi D1, R2, dan Telegram — jangan taruh logic di route langsung
+- Route frontend baru dibuat sebagai Vue route di `frontend/src/router.ts`, dengan view di feature yang sesuai, bukan file HTML terpisah.
+- Copy UI dan label kategori dikelola di `frontend/src/shared/i18n/locales/*.json`.
+- Feature Worker baru dibuat di `worker/src/features/` dan didaftarkan di `worker/src/index.ts`.
+- Infrastruktur Worker bersama berada di `worker/src/infrastructure/`; utilitas dan tipe bersama berada di `worker/src/shared/`.
+- Migrasi D1 berada di root `migrations/` agar ditemukan oleh konfigurasi Wrangler root.
 
 ### Data & Logic
 
@@ -319,7 +319,7 @@ bucket_name = "jelajah-blog-assets"
 ### Security
 
 - `ADMIN_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` disimpan sebagai Cloudflare Worker Secret — tidak boleh ada di frontend
-- Frontend hanya boleh memakai env publik berprefix `VITE_*`, seperti `VITE_API_BASE_URL`.
+- Frontend hanya boleh memakai env publik berprefix `VITE_*`, seperti `VITE_TURNSTILE_SITE_KEY`.
 - Validasi semua input di Worker (`utils/validation.ts`) — jangan andalkan validasi frontend saja
 - Batasi tipe file upload: `jpeg`, `png`, `webp` — tolak tipe lain di Worker
 - Batasi ukuran file upload maksimal **2MB** di Worker
