@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --config ../wrangler.dev.jsonc",
+    "deploy": "wrangler deploy --config ../wrangler.jsonc",
     "typecheck": "tsc --noEmit",
-    "db:migrate:local": "wrangler d1 migrations apply jelajah_blog --local",
-    "db:migrate:remote": "wrangler d1 migrations apply jelajah_blog --remote"
+    "db:migrate:local": "wrangler d1 migrations apply jelajah_blog --local --config ../wrangler.dev.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply jelajah_blog --remote --config ../wrangler.jsonc"
   },
   "dependencies": {
     "hono": "^4.6.17"

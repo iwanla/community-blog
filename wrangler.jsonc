@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  "name": "jelajah-blog",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-09-18",
+
+  "vars": {
+    "ASSET_PUBLIC_BASE_URL": "https://jelajah-blog-api.iwanlaudin01.workers.dev/assets"
+  },
+
+  "assets": {
+    "directory": "frontend/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "jelajah_blog",
+      "database_id": "77234480-585b-4d13-ace7-de7401874267"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "jelajah-blog-assets"
+    }
+  ]
+}

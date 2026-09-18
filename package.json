@@ -1,0 +1,19 @@
+{
+  "name": "jelajah-blog",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:frontend",
+    "dev": "npm run build:frontend && wrangler dev --config wrangler.dev.jsonc",
+    "deploy": "npm run build && wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply jelajah_blog --local --config wrangler.dev.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply jelajah_blog --remote",
+    "typecheck:frontend": "npm --prefix frontend run typecheck",
+    "typecheck:worker": "npm --prefix worker run typecheck",
+    "typecheck": "npm run typecheck:frontend && npm run typecheck:worker"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

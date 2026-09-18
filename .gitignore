@@ -4,6 +4,7 @@
 !.env.example
 worker/.dev.vars
 worker/.dev.vars.*
+/.dev.vars
 !worker/.dev.vars.example
 
 # Dependencies
